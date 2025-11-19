@@ -2,11 +2,6 @@
 
 const { GoogleGenAI } = require("@google/genai");
 
-const client = new GoogleGenAI({
-  // This MUST be set in Netlify env vars as GEMINI_API_KEY
-  apiKey: process.env.GEMINI_API_KEY,
-});
-
 exports.handler = async function (event, context) {
   if (event.httpMethod !== "POST") {
     return {
@@ -15,6 +10,22 @@ exports.handler = async function (event, context) {
       body: JSON.stringify({ error: "Method not allowed" }),
     };
   }
+
+  const apiKey = process.env.GEMINI_API_KEY;
+
+  // If Netlify env var is missing, bail out with a clear message
+  if (!apiKey) {
+    return {
+      statusCode: 500,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        error: "GEMINI_API_KEY env variable is NOT set in Netlify.",
+      }),
+    };
+  }
+
+  // Create client ONLY after we know we have an API key
+  const client = new GoogleGenAI({ apiKey });
 
   try {
     const body = JSON.parse(event.body || "{}");
@@ -29,7 +40,6 @@ exports.handler = async function (event, context) {
       };
     }
 
-    // SIMPLE CALL: no googleSearch tool, no Cloud credentials needed
     const response = await client.models.generateContent({
       model,
       contents: prompt,
