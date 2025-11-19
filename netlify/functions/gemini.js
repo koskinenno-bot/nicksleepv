@@ -1,11 +1,12 @@
 // netlify/functions/gemini.js
-import { GoogleGenAI } from "@google/genai";
+
+const { GoogleGenAI } = require("@google/genai");
 
 const client = new GoogleGenAI({
   apiKey: process.env.GEMINI_API_KEY,
 });
 
-export async function handler(event) {
+exports.handler = async function (event, context) {
   if (event.httpMethod !== "POST") {
     return {
       statusCode: 405,
@@ -57,4 +58,4 @@ export async function handler(event) {
       }),
     };
   }
-}
+};
