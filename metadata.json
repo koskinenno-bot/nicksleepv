@@ -1,0 +1,5 @@
+{
+  "name": "Nick Sleep's valuation model.",
+  "description": "An investment analysis tool inspired by Nick Sleep's Nomad Investment Partnership letters. It features a reverse-DCF valuation calculator and a 'Scale Economics Shared' moat analyzer using Gemini AI.",
+  "requestFramePermissions": []
+}
