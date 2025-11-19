@@ -3,6 +3,7 @@
 const { GoogleGenAI } = require("@google/genai");
 
 const client = new GoogleGenAI({
+  // This MUST be set in Netlify env vars as GEMINI_API_KEY
   apiKey: process.env.GEMINI_API_KEY,
 });
 
@@ -19,7 +20,6 @@ exports.handler = async function (event, context) {
     const body = JSON.parse(event.body || "{}");
     const prompt = body.prompt;
     const model = body.model || "gemini-2.5-flash";
-    const useSearch = !!body.useSearch;
 
     if (!prompt) {
       return {
@@ -29,16 +29,11 @@ exports.handler = async function (event, context) {
       };
     }
 
-    const request = {
+    // SIMPLE CALL: no googleSearch tool, no Cloud credentials needed
+    const response = await client.models.generateContent({
       model,
       contents: prompt,
-    };
-
-    if (useSearch) {
-      request.config = { tools: [{ googleSearch: {} }] };
-    }
-
-    const response = await client.models.generateContent(request);
+    });
 
     return {
       statusCode: 200,
