@@ -1,39 +1,19 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { CompanyData, AnalysisResult, LoadingState } from './types';
-import { fetchCompanyFinancials, analyzeMoatRobustness, hasApiKey, setApiKey, clearApiKey } from './services/geminiService';
+import { fetchCompanyFinancials, analyzeMoatRobustness } from './services/geminiService';
 import SearchHeader from './components/SearchHeader';
 import ValuationTool from './components/ValuationTool';
 import MoatAnalyzer from './components/MoatAnalyzer';
 import NewsFeed from './components/NewsFeed';
 import PresentationCard from './components/PresentationCard';
-import ApiKeyInput from './components/ApiKeyInput';
+import KpiDashboard from './components/KpiDashboard';
 
 const App: React.FC = () => {
-  const [isKeySet, setIsKeySet] = useState(false);
   const [loadingState, setLoadingState] = useState<LoadingState>(LoadingState.IDLE);
   const [company, setCompany] = useState<CompanyData | null>(null);
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    // Check if key exists on mount
-    if (hasApiKey()) {
-      setIsKeySet(true);
-    }
-  }, []);
-
-  const handleSaveKey = (key: string) => {
-    setApiKey(key);
-    setIsKeySet(true);
-  };
-
-  const handleLogout = () => {
-    clearApiKey();
-    setIsKeySet(false);
-    setCompany(null);
-    setAnalysis(null);
-  };
 
   const handleSearch = async (ticker: string) => {
     setLoadingState(LoadingState.SEARCHING);
@@ -59,20 +39,8 @@ const App: React.FC = () => {
     }
   };
 
-  if (!isKeySet) {
-    return <ApiKeyInput onSave={handleSaveKey} />;
-  }
-
   return (
     <div className="min-h-screen bg-[#111] pb-20 relative">
-      {/* Logout / Clear Key Button */}
-      <button 
-        onClick={handleLogout}
-        className="absolute top-4 right-4 text-xs text-nomad-600 hover:text-nomad-400 z-50"
-      >
-        Change API Key
-      </button>
-
       <SearchHeader onSearch={handleSearch} loadingState={loadingState} />
 
       <main className="max-w-6xl mx-auto px-6 mt-8 space-y-10">
@@ -121,6 +89,13 @@ const App: React.FC = () => {
                   <section className="animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-200">
                     <MoatAnalyzer company={company} analysis={analysis} />
                   </section>
+
+                  {/* KPI Section */}
+                  {analysis.kpis && analysis.kpis.length > 0 && (
+                    <section className="animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-250">
+                      <KpiDashboard kpis={analysis.kpis} />
+                    </section>
+                  )}
 
                   {/* Investor Presentation & News Section */}
                   <section className="animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300 grid grid-cols-1 gap-8">

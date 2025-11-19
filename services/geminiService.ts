@@ -1,54 +1,12 @@
-
 import { GoogleGenAI } from "@google/genai";
 import { CompanyData, AnalysisResult } from "../types";
 
-// Internal storage for the key
-let dynamicApiKey: string | null = null;
-
-export const setApiKey = (key: string) => {
-  dynamicApiKey = key;
-  localStorage.setItem('gemini_api_key', key);
-};
-
-export const hasApiKey = (): boolean => {
-  if (dynamicApiKey) return true;
-  if (localStorage.getItem('gemini_api_key')) {
-    dynamicApiKey = localStorage.getItem('gemini_api_key');
-    return true;
-  }
-  // Safe check for process.env in case we are in a build environment
-  try {
-    if (process.env.API_KEY) {
-      dynamicApiKey = process.env.API_KEY;
-      return true;
-    }
-  } catch (e) {
-    // process is not defined, ignore
-  }
-  return false;
-};
-
-export const clearApiKey = () => {
-  dynamicApiKey = null;
-  localStorage.removeItem('gemini_api_key');
-};
-
 const getClient = () => {
-  if (!dynamicApiKey) {
-    // Try to reload from storage
-    if (localStorage.getItem('gemini_api_key')) {
-       dynamicApiKey = localStorage.getItem('gemini_api_key');
-    } else {
-       // Last ditch effort for env var
-       try {
-         if (process.env.API_KEY) dynamicApiKey = process.env.API_KEY;
-       } catch(e) {}
-    }
-  }
+  const apiKey = process.env.API_KEY;
 
-  if (!dynamicApiKey) throw new Error("API Key is missing. Please provide it in the settings.");
+  if (!apiKey) throw new Error("API Key is missing. Please ensure process.env.API_KEY is set.");
   
-  return new GoogleGenAI({ apiKey: dynamicApiKey });
+  return new GoogleGenAI({ apiKey });
 };
 
 export const fetchCompanyFinancials = async (ticker: string): Promise<CompanyData> => {
@@ -124,7 +82,7 @@ export const analyzeMoatRobustness = async (ticker: string, companyName: string)
   const ai = getClient();
   
   const prompt = `
-  Analyze ${companyName} (${ticker}) using two frameworks:
+  Analyze ${companyName} (${ticker}) using two frameworks and find recent data:
   
   1. Nick Sleep's "Scale Economics Shared" (Robustness Ratio):
      - Does the company pass on scale benefits to customers (lower prices) or keep them as margins?
@@ -139,9 +97,16 @@ export const analyzeMoatRobustness = async (ticker: string, companyName: string)
      - Find 3 recent news headlines/events relevant to the company stock or business from the last 30 days.
   
   4. Investor Presentation:
-     - Find the URL for the most recent Investor Presentation, Earnings Presentation, or Strategic Update Slideshow (PDF or Webpage). 
-     - Return the title (e.g., "Q3 2024 Earnings Presentation") and the URL.
+     - SEARCH for the latest "Investor Presentation" or "Earnings Slides" for ${companyName}.
+     - PREFERRED: A direct link to the specific presentation (PDF or webpage).
+     - ACCEPTABLE FALLBACK: The main Investor Relations homepage if a specific link is hard to find or might expire.
+     - Return the title and the URL.
 
+  5. Key Performance Indicators (KPIs):
+     - Identify 3-4 critical quantitative KPIs that drive this specific business (e.g. for Netflix: "Global Paid Subs"; for Retail: "Same Store Sales" or "Store Count"; for Tech: "Daily Active Users" or "Cloud Revenue").
+     - Provide 3-5 years of historical data for each KPI.
+     - Ensure the 'value' is a number (no symbols).
+     
   Format the output strictly as a JSON object inside a code block:
   \`\`\`json
   {
@@ -158,7 +123,18 @@ export const analyzeMoatRobustness = async (ticker: string, companyName: string)
     "investorPresentation": {
        "title": "Q3 2024 Earnings Slides",
        "url": "https://..."
-    }
+    },
+    "kpis": [
+       {
+         "title": "Paid Subscribers",
+         "unit": "Millions",
+         "description": "Total global paying memberships",
+         "data": [
+           {"year": "2020", "value": 203.6},
+           {"year": "2021", "value": 221.8}
+         ]
+       }
+    ]
   }
   \`\`\`
   `;
@@ -192,6 +168,7 @@ export const analyzeMoatRobustness = async (ticker: string, companyName: string)
       moatSource: "Unknown",
       moatDescription: "Analysis failed to parse.",
       news: [],
+      kpis: []
     };
   }
 
@@ -212,6 +189,7 @@ export const analyzeMoatRobustness = async (ticker: string, companyName: string)
     moatDescription: result.moatDescription || "No details provided.",
     news: result.news || [],
     investorPresentation: result.investorPresentation,
+    kpis: result.kpis || [],
     sources: sources as any
   };
 };

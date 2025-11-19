@@ -28,6 +28,18 @@ export interface NewsItem {
   source: string;
 }
 
+export interface KpiDataPoint {
+  year: string;
+  value: number;
+}
+
+export interface KpiItem {
+  title: string;
+  unit: string;
+  data: KpiDataPoint[];
+  description?: string;
+}
+
 export interface AnalysisResult {
   summary: string;
   robustnessScore: number; // 1-10
@@ -44,6 +56,7 @@ export interface AnalysisResult {
     title: string;
     url: string;
   };
+  kpis?: KpiItem[];
 }
 
 export interface ValuationScenario {
