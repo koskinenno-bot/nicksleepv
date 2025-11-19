@@ -1,198 +1,191 @@
-declare const process: any;
-import { GoogleGenAI } from "@google/genai";
+// services/geminiService.ts
+
 import { CompanyData, AnalysisResult } from "../types";
 
-const getClient = () => {
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY as string;
-
-if (!apiKey) {
-  throw new Error("API Key is missing. Please ensure VITE_GEMINI_API_KEY is set.");
-}
-  
-  return new GoogleGenAI({ apiKey });
+type GeminiResponse = {
+  text?: string;
+  candidates?: any[];
 };
 
-export const fetchCompanyFinancials = async (ticker: string): Promise<CompanyData> => {
-  const ai = getClient();
-  
-  const prompt = `
-  Find the most recent financial data for ${ticker}. 
-  I need the Current Stock Price, TTM Earnings Per Share (EPS), TTM Free Cash Flow (FCF) per share, and the Company Name.
-  Also, find the annual Revenue (in billions) and Net Profit Margin (as a percentage) for the last 5 years (2020-2024 approx).
-  
-  CRITICAL: I also need the following TTM (Trailing Twelve Months) absolute values in BILLIONS USD to calculate Owner's Earnings:
-  1. Net Income (TTM)
-  2. Depreciation & Amortization (TTM)
-  3. Capital Expenditures (TTM) - Return as a positive number.
-  4. Change in Working Capital (TTM)
-  5. Shares Outstanding (in Billions)
-
-  Format the output strictly as a JSON object inside a code block like this:
-  \`\`\`json
-  {
-    "name": "Company Name",
-    "price": 123.45,
-    "eps": 5.67,
-    "fcfPerShare": 6.78,
-    "sharesOutstanding": 0.5,
-    "currentPe": 20.5,
-    "revenueGrowth5Y": 0.15,
-    "description": "Short one sentence description.",
-    "financials": [
-      {"year": "2020", "revenue": 50.5, "netMargin": 12.5},
-      {"year": "2021", "revenue": 60.2, "netMargin": 13.0}
-    ],
-    "ttmFinancials": {
-      "netIncome": 10.5,
-      "depreciation": 2.5,
-      "capitalExpenditures": 3.0,
-      "changeInWorkingCapital": -0.5
-    }
-  }
-  \`\`\`
-  Note: revenueGrowth5Y should be a decimal (e.g., 0.10 for 10%). Net margin should be the percentage value (e.g., 12.5).
-  `;
-
-  const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash",
-    contents: prompt,
-    config: {
-      tools: [{ googleSearch: {} }],
-    },
+// Calls the Netlify serverless Gemini function
+async function callGemini(prompt: string, useSearch = false): Promise<GeminiResponse> {
+  const res = await fetch("/.netlify/functions/gemini", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ prompt, useSearch }),
   });
 
-  const text = response.text || "";
-  
-  // Extract JSON from markdown code block
-  const jsonMatch = text.match(/```json\n([\s\S]*?)\n```/);
-  if (!jsonMatch) {
-    console.error("Raw response:", text);
-    throw new Error("Failed to parse financial data from AI response");
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`Gemini function error: ${body}`);
+  }
+
+  return res.json();
+}
+
+// ------------------------
+// 1. FETCH COMPANY DATA
+// ------------------------
+
+export const fetchCompanyFinancials = async (ticker: string): Promise<CompanyData> => {
+  const prompt = `
+    Find the most recent financial data for ${ticker}. 
+    I need the Current Stock Price, TTM Earnings Per Share (EPS), TTM Free Cash Flow (FCF) per share, and the Company Name.
+
+    Also find the annual Revenue (in billions) and Net Profit Margin (percentage) for the last 5 years (2020-2024 approx).
+
+    CRITICAL TTM VALUES (in BILLIONS USD):
+      - Net Income
+      - Depreciation & Amortization
+      - Capital Expenditures (positive number)
+      - Change in Working Capital
+      - Shares Outstanding (in billions)
+
+    Format STRICTLY as:
+
+    \`\`\`json
+    {
+      "name": "Company Name",
+      "price": 123.45,
+      "eps": 5.67,
+      "fcfPerShare": 6.78,
+      "sharesOutstanding": 0.5,
+      "currentPe": 20.5,
+      "revenueGrowth5Y": 0.15,
+      "description": "Short description.",
+      "financials": [
+        {"year": "2020", "revenue": 50.5, "netMargin": 12.5},
+        {"year": "2021", "revenue": 60.2, "netMargin": 13.0}
+      ],
+      "ttmFinancials": {
+        "netIncome": 10.5,
+        "depreciation": 2.5,
+        "capitalExpenditures": 3.0,
+        "changeInWorkingCapital": -0.5
+      }
+    }
+    \`\`\`
+  `;
+
+  const { text = "" } = await callGemini(prompt, true);
+
+  const match = text.match(/```json\n([\s\S]*?)\n```/);
+  if (!match) {
+    console.error("Gemini raw response:", text);
+    throw new Error("Failed to parse financial data JSON");
   }
 
   try {
-    const data = JSON.parse(jsonMatch[1]);
+    const parsed = JSON.parse(match[1]);
     return {
       ticker: ticker.toUpperCase(),
-      ...data
+      ...parsed,
     };
-  } catch (e) {
-    throw new Error("Invalid JSON format received from AI");
+  } catch {
+    throw new Error("Invalid JSON format from Gemini");
   }
 };
 
-export const analyzeMoatRobustness = async (ticker: string, companyName: string): Promise<AnalysisResult> => {
-  const ai = getClient();
-  
+// ------------------------
+// 2. MOAT + KPI ANALYSIS
+// ------------------------
+
+export const analyzeMoatRobustness = async (
+  ticker: string,
+  companyName: string
+): Promise<AnalysisResult> => {
   const prompt = `
-  Analyze ${companyName} (${ticker}) using two frameworks and find recent data:
-  
-  1. Nick Sleep's "Scale Economics Shared" (Robustness Ratio):
-     - Does the company pass on scale benefits to customers (lower prices) or keep them as margins?
-     - Robustness Score 1-10 (10 = Costco/Amazon).
+    Analyze ${companyName} (${ticker}) using:
+    
+    1. Nick Sleep's "Scale Economics Shared"
+       - Robustness Score 1-10
+       - Does the company pass scale benefits to customers?
 
-  2. General Moat Analysis (Morningstar style):
-     - Verdict: "Wide", "Narrow", or "None".
-     - Primary Source: "Network Effects", "Switching Costs", "Intangible Assets", "Cost Advantage", or "Efficient Scale".
-     - Detailed explanation of the moat.
+    2. Morningstar Moat Framework
+       - Verdict: Wide, Narrow, or None
+       - Source: Network Effects, Switching Costs, Intangible Assets, Cost Advantage, or Efficient Scale
+       - Explanation of the moat
 
-  3. Recent News:
-     - Find 3 recent news headlines/events relevant to the company stock or business from the last 30 days.
-  
-  4. Investor Presentation:
-     - SEARCH for the latest "Investor Presentation" or "Earnings Slides" for ${companyName}.
-     - PREFERRED: A direct link to the specific presentation (PDF or webpage).
-     - ACCEPTABLE FALLBACK: The main Investor Relations homepage if a specific link is hard to find or might expire.
-     - Return the title and the URL.
+    3. Recent News (3 headlines from the last 30 days)
 
-  5. Key Performance Indicators (KPIs):
-     - Identify 3-4 critical quantitative KPIs that drive this specific business (e.g. for Netflix: "Global Paid Subs"; for Retail: "Same Store Sales" or "Store Count"; for Tech: "Daily Active Users" or "Cloud Revenue").
-     - Provide 3-5 years of historical data for each KPI.
-     - Ensure the 'value' is a number (no symbols).
-     
-  Format the output strictly as a JSON object inside a code block:
-  \`\`\`json
-  {
-    "summary": "Brief executive summary of the business quality.",
-    "robustnessScore": 8,
-    "scaleEconomicsShared": "Specific analysis of scale economics shared...",
-    "moatVerdict": "Wide",
-    "moatSource": "Cost Advantage",
-    "moatDescription": "Explanation of why the moat is wide/narrow...",
-    "news": [
-      {"title": "Headline 1", "date": "YYYY-MM-DD", "source": "Bloomberg"},
-      {"title": "Headline 2", "date": "...", "source": "Reuters"}
-    ],
-    "investorPresentation": {
-       "title": "Q3 2024 Earnings Slides",
-       "url": "https://..."
-    },
-    "kpis": [
-       {
-         "title": "Paid Subscribers",
-         "unit": "Millions",
-         "description": "Total global paying memberships",
-         "data": [
-           {"year": "2020", "value": 203.6},
-           {"year": "2021", "value": 221.8}
-         ]
-       }
-    ]
-  }
-  \`\`\`
+    4. Investor Presentation (Latest PDF or IR page)
+
+    5. KPIs (3-4 key metrics, 3-5 years of data)
+
+    Format as:
+
+    \`\`\`json
+    {
+      "summary": "...",
+      "robustnessScore": 8,
+      "scaleEconomicsShared": "...",
+      "moatVerdict": "Wide",
+      "moatSource": "Cost Advantage",
+      "moatDescription": "...",
+      "news": [
+        {"title": "Headline", "date": "YYYY-MM-DD", "source": "Bloomberg"}
+      ],
+      "investorPresentation": {
+        "title": "Q3 Slides",
+        "url": "https://..."
+      },
+      "kpis": [
+        {
+          "title": "Paid Subs",
+          "unit": "Millions",
+          "description": "...",
+          "data": [
+            {"year": "2020", "value": 203.6},
+            {"year": "2021", "value": 221.8}
+          ]
+        }
+      ]
+    }
+    \`\`\`
   `;
 
-  const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash",
-    contents: prompt,
-    config: {
-      tools: [{ googleSearch: {} }],
-    },
-  });
+  const { text = "", candidates } = await callGemini(prompt, true);
+  const match = text.match(/```json\n([\s\S]*?)\n```/);
 
-  const text = response.text || "";
-  const jsonMatch = text.match(/```json\n([\s\S]*?)\n```/);
-  
-  let result: Partial<AnalysisResult> = {};
-  if (jsonMatch) {
+  let parsed: any = {};
+  if (match) {
     try {
-      result = JSON.parse(jsonMatch[1]);
-    } catch (e) {
-      console.error("JSON Parse Error", e);
+      parsed = JSON.parse(match[1]);
+    } catch (err) {
+      console.error("JSON parse error:", err);
     }
   }
-  
-  if (!result.summary) {
-    result = {
+
+  // Fallback if parsing failed
+  if (!parsed.summary) {
+    parsed = {
       summary: text.slice(0, 200) + "...",
       robustnessScore: 5,
       scaleEconomicsShared: "Could not structure analysis.",
       moatVerdict: "Unknown",
       moatSource: "Unknown",
-      moatDescription: "Analysis failed to parse.",
+      moatDescription: "No detailed moat information.",
       news: [],
-      kpis: []
+      kpis: [],
     };
   }
 
-  // Extract sources if available
-  const sources = response.candidates?.[0]?.groundingMetadata?.groundingChunks
-    ?.map((chunk: any) => {
-      if (chunk.web) return { title: chunk.web.title, uri: chunk.web.uri };
-      return null;
-    })
-    .filter(Boolean) || [];
+  const sources =
+    candidates?.[0]?.groundingMetadata?.groundingChunks
+      ?.map((c: any) => (c.web ? { title: c.web.title, uri: c.web.uri } : null))
+      .filter(Boolean) || [];
 
   return {
-    summary: result.summary || "",
-    robustnessScore: result.robustnessScore || 5,
-    scaleEconomicsShared: result.scaleEconomicsShared || "",
-    moatVerdict: result.moatVerdict || "Unknown",
-    moatSource: result.moatSource || "Unknown",
-    moatDescription: result.moatDescription || "No details provided.",
-    news: result.news || [],
-    investorPresentation: result.investorPresentation,
-    kpis: result.kpis || [],
-    sources: sources as any
+    summary: parsed.summary,
+    robustnessScore: parsed.robustnessScore,
+    scaleEconomicsShared: parsed.scaleEconomicsShared,
+    moatVerdict: parsed.moatVerdict,
+    moatSource: parsed.moatSource,
+    moatDescription: parsed.moatDescription,
+    news: parsed.news,
+    investorPresentation: parsed.investorPresentation,
+    kpis: parsed.kpis,
+    sources: sources as any,
   };
 };
+
