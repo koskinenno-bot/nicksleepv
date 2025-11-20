@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CompanyData, AnalysisResult, LoadingState } from './types';
 import { fetchCompanyFinancials, analyzeMoatRobustness } from './services/geminiService';
 import SearchHeader from './components/SearchHeader';
@@ -8,14 +8,42 @@ import MoatAnalyzer from './components/MoatAnalyzer';
 import NewsFeed from './components/NewsFeed';
 import PresentationCard from './components/PresentationCard';
 import KpiDashboard from './components/KpiDashboard';
+import ApiKeyInput from './components/ApiKeyInput';
 
 const App: React.FC = () => {
+  const [apiKey, setApiKey] = useState<string>('');
   const [loadingState, setLoadingState] = useState<LoadingState>(LoadingState.IDLE);
   const [company, setCompany] = useState<CompanyData | null>(null);
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // Check for key on mount
+  useEffect(() => {
+    const storedKey = localStorage.getItem('gemini_api_key');
+    const envKey = process.env.API_KEY;
+    
+    if (storedKey) {
+      setApiKey(storedKey);
+    } else if (envKey) {
+      setApiKey(envKey);
+    }
+  }, []);
+
+  const handleSaveKey = (key: string) => {
+    localStorage.setItem('gemini_api_key', key);
+    setApiKey(key);
+  };
+
+  const clearKey = () => {
+    localStorage.removeItem('gemini_api_key');
+    setApiKey('');
+    setCompany(null);
+    setAnalysis(null);
+  };
+
   const handleSearch = async (ticker: string) => {
+    if (!apiKey) return;
+    
     setLoadingState(LoadingState.SEARCHING);
     setError(null);
     setCompany(null);
@@ -23,12 +51,12 @@ const App: React.FC = () => {
 
     try {
       // 1. Get Financials
-      const financialData = await fetchCompanyFinancials(ticker);
+      const financialData = await fetchCompanyFinancials(ticker, apiKey);
       setCompany(financialData);
       
       // 2. Analyze Qualitative Aspects
       setLoadingState(LoadingState.ANALYZING);
-      const analysisData = await analyzeMoatRobustness(ticker, financialData.name);
+      const analysisData = await analyzeMoatRobustness(ticker, financialData.name, apiKey);
       setAnalysis(analysisData);
       
       setLoadingState(LoadingState.COMPLETE);
@@ -38,6 +66,11 @@ const App: React.FC = () => {
       setLoadingState(LoadingState.ERROR);
     }
   };
+
+  // If no API key is present, show the input screen
+  if (!apiKey) {
+    return <ApiKeyInput onSave={handleSaveKey} />;
+  }
 
   return (
     <div className="min-h-screen bg-[#111] pb-20 relative">
@@ -120,6 +153,9 @@ const App: React.FC = () => {
       <footer className="mt-20 py-8 text-center text-nomad-600 text-sm border-t border-nomad-900">
         <p>Inspired by the letters of the Nomad Investment Partnership (Nick Sleep & Qais Zakaria).</p>
         <p className="mt-2 text-xs">Data generated via Gemini AI. Use for educational purposes only.</p>
+        <button onClick={clearKey} className="mt-4 text-xs text-nomad-700 hover:text-yellow-600 transition-colors underline">
+          Change API Key
+        </button>
       </footer>
     </div>
   );
