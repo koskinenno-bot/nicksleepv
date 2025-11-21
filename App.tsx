@@ -39,6 +39,7 @@ const App: React.FC = () => {
     setApiKey('');
     setCompany(null);
     setAnalysis(null);
+    setError(null);
   };
 
   const handleSearch = async (ticker: string) => {
@@ -62,7 +63,14 @@ const App: React.FC = () => {
       setLoadingState(LoadingState.COMPLETE);
     } catch (err: any) {
       console.error(err);
-      setError(err.message || "An unexpected error occurred. Please check your API Key or try again.");
+      
+      // Enhance error message for common 429 code
+      let errorMessage = err.message || "An unexpected error occurred.";
+      if (errorMessage.includes("429") || errorMessage.includes("Resource has been exhausted")) {
+        errorMessage = "API Quota Exceeded (429). We tried retrying, but the limit persists. Please ensure your API key is linked to a billing account in Google AI Studio.";
+      }
+      
+      setError(errorMessage);
       setLoadingState(LoadingState.ERROR);
     }
   };
@@ -80,8 +88,18 @@ const App: React.FC = () => {
         
         {/* Error State */}
         {loadingState === LoadingState.ERROR && (
-          <div className="bg-red-900/20 border border-red-800/50 text-red-200 p-6 rounded-xl text-center backdrop-blur-sm">
-            {error}
+          <div className="bg-red-900/20 border border-red-800/50 text-red-200 p-8 rounded-xl text-center backdrop-blur-sm max-w-2xl mx-auto shadow-2xl">
+            <div className="flex flex-col items-center gap-4">
+               <div className="text-4xl mb-2">⚠️</div>
+               <h3 className="text-xl font-serif text-white">Analysis Failed</h3>
+               <p className="text-lg font-light opacity-90 leading-relaxed">{error}</p>
+               <button 
+                 onClick={clearKey}
+                 className="mt-4 bg-red-900/50 hover:bg-red-800/50 text-white px-6 py-3 rounded-lg border border-red-700 transition-all text-sm font-bold uppercase tracking-wider hover:scale-105"
+               >
+                 Change API Key
+               </button>
+            </div>
           </div>
         )}
 
@@ -160,7 +178,7 @@ const App: React.FC = () => {
       
       <footer className="mt-32 py-12 text-center border-t border-nomad-900 bg-nomad-950">
         <p className="text-nomad-500 text-sm">Inspired by the letters of the Nomad Investment Partnership (Nick Sleep & Qais Zakaria).</p>
-        <p className="mt-2 text-xs text-nomad-600">Data generated via Gemini AI. Use for educational purposes only.</p>
+        <p className="mt-2 text-xs text-nomad-600">Data generated via Gemini 3.0 Pro. Use for educational purposes only.</p>
         <button onClick={clearKey} className="mt-6 text-xs text-nomad-600 hover:text-yellow-500 transition-colors underline">
           Change API Key
         </button>

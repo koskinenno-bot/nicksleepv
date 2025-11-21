@@ -1,5 +1,5 @@
 
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
 import { CompanyData, AnalysisResult } from "../types";
 
 const getClient = (apiKey?: string) => {
@@ -9,6 +9,26 @@ const getClient = (apiKey?: string) => {
   if (!key) throw new Error("API Key is missing. Please provide a valid Gemini API Key.");
   
   return new GoogleGenAI({ apiKey: key });
+};
+
+/**
+ * Retries an async operation with exponential backoff if a 429 (Rate Limit) error occurs.
+ */
+const retryWithBackoff = async <T>(fn: () => Promise<T>, retries = 5, delay = 2000): Promise<T> => {
+  try {
+    return await fn();
+  } catch (error: any) {
+    // Check for common rate limit error patterns in the SDK
+    const msg = error?.message || '';
+    const isRateLimit = msg.includes('429') || msg.includes('Resource has been exhausted') || error?.status === 429;
+
+    if (isRateLimit && retries > 0) {
+      console.warn(`Rate limit hit. Retrying in ${delay}ms... (Attempts left: ${retries})`);
+      await new Promise(resolve => setTimeout(resolve, delay));
+      return retryWithBackoff(fn, retries - 1, delay * 2);
+    }
+    throw error;
+  }
 };
 
 export const fetchCompanyFinancials = async (ticker: string, apiKey?: string): Promise<CompanyData> => {
@@ -54,13 +74,14 @@ export const fetchCompanyFinancials = async (ticker: string, apiKey?: string): P
   Note: revenueGrowth5Y should be a decimal (e.g., 0.10 for 10%). Net margin should be the percentage value (e.g., 12.5).
   `;
 
-  const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash",
+  // Upgraded to gemini-3-pro-preview for better financial data extraction
+  const response = await retryWithBackoff<GenerateContentResponse>(() => ai.models.generateContent({
+    model: "gemini-3-pro-preview",
     contents: prompt,
     config: {
       tools: [{ googleSearch: {} }],
     },
-  });
+  }));
 
   const text = response.text || "";
   
@@ -143,13 +164,14 @@ export const analyzeMoatRobustness = async (ticker: string, companyName: string,
   \`\`\`
   `;
 
-  const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash",
+  // Upgraded to gemini-3-pro-preview for better reasoning capabilities
+  const response = await retryWithBackoff<GenerateContentResponse>(() => ai.models.generateContent({
+    model: "gemini-3-pro-preview",
     contents: prompt,
     config: {
       tools: [{ googleSearch: {} }],
     },
-  });
+  }));
 
   const text = response.text || "";
   const jsonMatch = text.match(/```json\n([\s\S]*?)\n```/);

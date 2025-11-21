@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { LoadingState } from '../types';
 
@@ -31,7 +30,7 @@ const SearchHeader: React.FC<Props> = ({ onSearch, loadingState }) => {
         </div>
 
         <h1 className="text-4xl md:text-6xl font-serif font-medium text-nomad-50 mb-6 tracking-tight">
-          How to value like <span className="italic text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-600">Nick Sleep</span>
+          How to value like <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-600">Nick Sleep</span>
         </h1>
         
         <p className="text-nomad-400 mb-10 max-w-xl mx-auto leading-relaxed text-lg font-light">
