@@ -22,9 +22,10 @@ export const fetchCompanyFinancials = async (ticker: string, apiKey?: string): P
   CRITICAL: I also need the following TTM (Trailing Twelve Months) absolute values in BILLIONS USD to calculate Owner's Earnings:
   1. Net Income (TTM)
   2. Depreciation & Amortization (TTM)
-  3. Capital Expenditures (TTM) - Return as a positive number.
-  4. Change in Working Capital (TTM)
-  5. Shares Outstanding (in Billions)
+  3. Stock Based Compensation (TTM) - Return as a positive number.
+  4. Capital Expenditures (TTM) - Return as a positive number.
+  5. Change in Working Capital (TTM)
+  6. Shares Outstanding (in Billions)
 
   Format the output strictly as a JSON object inside a code block like this:
   \`\`\`json
@@ -44,6 +45,7 @@ export const fetchCompanyFinancials = async (ticker: string, apiKey?: string): P
     "ttmFinancials": {
       "netIncome": 10.5,
       "depreciation": 2.5,
+      "stockBasedCompensation": 1.2,
       "capitalExpenditures": 3.0,
       "changeInWorkingCapital": -0.5
     }

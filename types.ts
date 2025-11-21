@@ -17,6 +17,7 @@ export interface CompanyData {
   ttmFinancials: {
     netIncome: number;
     depreciation: number;
+    stockBasedCompensation: number;
     changeInWorkingCapital: number;
     capitalExpenditures: number;
   };
