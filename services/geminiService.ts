@@ -14,7 +14,7 @@ const getClient = (apiKey?: string) => {
 /**
  * Retries an async operation with exponential backoff if a 429 (Rate Limit) or 503 (Overloaded) error occurs.
  */
-const retryWithBackoff = async <T>(fn: () => Promise<T>, retries = 5, delay = 2000): Promise<T> => {
+const retryWithBackoff = async <T>(fn: () => Promise<T>, retries = 3, delay = 1000): Promise<T> => {
   try {
     return await fn();
   } catch (error: any) {
@@ -30,6 +30,42 @@ const retryWithBackoff = async <T>(fn: () => Promise<T>, retries = 5, delay = 20
       await new Promise(resolve => setTimeout(resolve, delay));
       return retryWithBackoff(fn, retries - 1, delay * 2);
     }
+    throw error;
+  }
+};
+
+/**
+ * smartGenerate: Tries the Pro model first. If it fails due to capacity (503) or quota (429),
+ * falls back to the Flash model.
+ */
+const smartGenerate = async (ai: GoogleGenAI, contents: string, tools: any[] = []): Promise<GenerateContentResponse> => {
+  // 1. Try Gemini 3.0 Pro (Most capable, but prone to 503/429 in preview)
+  try {
+    return await retryWithBackoff(async () => {
+      return await ai.models.generateContent({
+        model: "gemini-3-pro-preview",
+        contents: contents,
+        config: { tools },
+      });
+    }, 2, 1000); // 2 retries only for Pro to fail fast
+  } catch (error: any) {
+    const msg = error?.message || '';
+    // Only fallback on availability errors. If it's a 400 (Bad Request), fallback won't help.
+    const isAvailabilityIssue = msg.includes('503') || msg.includes('429') || msg.includes('overloaded') || msg.includes('exhausted');
+
+    if (isAvailabilityIssue) {
+      console.warn("Gemini 3.0 Pro is overloaded/limited. Falling back to Gemini 2.5 Flash.");
+      
+      // 2. Fallback to Gemini 2.5 Flash (Very stable, higher quotas)
+      return await retryWithBackoff(async () => {
+        return await ai.models.generateContent({
+          model: "gemini-2.5-flash",
+          contents: contents,
+          config: { tools },
+        });
+      }, 3, 2000); // Standard retry for Flash
+    }
+    
     throw error;
   }
 };
@@ -77,14 +113,7 @@ export const fetchCompanyFinancials = async (ticker: string, apiKey?: string): P
   Note: revenueGrowth5Y should be a decimal (e.g., 0.10 for 10%). Net margin should be the percentage value (e.g., 12.5).
   `;
 
-  // Upgraded to gemini-3-pro-preview for better financial data extraction
-  const response = await retryWithBackoff<GenerateContentResponse>(() => ai.models.generateContent({
-    model: "gemini-3-pro-preview",
-    contents: prompt,
-    config: {
-      tools: [{ googleSearch: {} }],
-    },
-  }));
+  const response = await smartGenerate(ai, prompt, [{ googleSearch: {} }]);
 
   const text = response.text || "";
   
@@ -167,14 +196,7 @@ export const analyzeMoatRobustness = async (ticker: string, companyName: string,
   \`\`\`
   `;
 
-  // Upgraded to gemini-3-pro-preview for better reasoning capabilities
-  const response = await retryWithBackoff<GenerateContentResponse>(() => ai.models.generateContent({
-    model: "gemini-3-pro-preview",
-    contents: prompt,
-    config: {
-      tools: [{ googleSearch: {} }],
-    },
-  }));
+  const response = await smartGenerate(ai, prompt, [{ googleSearch: {} }]);
 
   const text = response.text || "";
   const jsonMatch = text.match(/```json\n([\s\S]*?)\n```/);
