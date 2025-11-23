@@ -12,18 +12,21 @@ const getClient = (apiKey?: string) => {
 };
 
 /**
- * Retries an async operation with exponential backoff if a 429 (Rate Limit) error occurs.
+ * Retries an async operation with exponential backoff if a 429 (Rate Limit) or 503 (Overloaded) error occurs.
  */
 const retryWithBackoff = async <T>(fn: () => Promise<T>, retries = 5, delay = 2000): Promise<T> => {
   try {
     return await fn();
   } catch (error: any) {
-    // Check for common rate limit error patterns in the SDK
+    // Check for common error patterns in the SDK
     const msg = error?.message || '';
-    const isRateLimit = msg.includes('429') || msg.includes('Resource has been exhausted') || error?.status === 429;
+    const status = error?.status || error?.code; 
 
-    if (isRateLimit && retries > 0) {
-      console.warn(`Rate limit hit. Retrying in ${delay}ms... (Attempts left: ${retries})`);
+    const isRateLimit = msg.includes('429') || msg.includes('Resource has been exhausted') || status === 429;
+    const isOverloaded = msg.includes('503') || msg.includes('overloaded') || status === 503;
+
+    if ((isRateLimit || isOverloaded) && retries > 0) {
+      console.warn(`API Error (${status || 'unknown'}). Retrying in ${delay}ms... (Attempts left: ${retries})`);
       await new Promise(resolve => setTimeout(resolve, delay));
       return retryWithBackoff(fn, retries - 1, delay * 2);
     }

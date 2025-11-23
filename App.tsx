@@ -64,10 +64,13 @@ const App: React.FC = () => {
     } catch (err: any) {
       console.error(err);
       
-      // Enhance error message for common 429 code
+      // Enhance error message for common codes
       let errorMessage = err.message || "An unexpected error occurred.";
+      
       if (errorMessage.includes("429") || errorMessage.includes("Resource has been exhausted")) {
-        errorMessage = "API Quota Exceeded (429). We tried retrying, but the limit persists. Please ensure your API key is linked to a billing account in Google AI Studio.";
+        errorMessage = "API Quota Exceeded (429). We tried retrying, but the limit persists. Please ensure your API key is linked to a billing account.";
+      } else if (errorMessage.includes("503") || errorMessage.includes("overloaded")) {
+         errorMessage = "Model Overloaded (503). Google's AI service is currently experiencing high traffic. Please try again in a minute.";
       }
       
       setError(errorMessage);
