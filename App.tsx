@@ -50,14 +50,25 @@ const App: React.FC = () => {
     setCompany(null);
     setAnalysis(null);
 
+    // Start both requests in parallel to improve speed
+    const financialPromise = fetchCompanyFinancials(ticker, apiKey);
+    
+    // We use ticker as name initially for parallelism. 
+    // The prompt "Analyze AMZN (AMZN)..." works perfectly fine for the AI.
+    const analysisPromise = analyzeMoatRobustness(ticker, ticker, apiKey);
+
     try {
-      // 1. Get Financials
-      const financialData = await fetchCompanyFinancials(ticker, apiKey);
+      // 1. Await Financials (Fastest)
+      // This usually finishes quickly (2-3s) as it uses Flash model now
+      const financialData = await financialPromise;
       setCompany(financialData);
       
-      // 2. Analyze Qualitative Aspects
+      // 2. Update state to show we are still analyzing text
       setLoadingState(LoadingState.ANALYZING);
-      const analysisData = await analyzeMoatRobustness(ticker, financialData.name, apiKey);
+      
+      // 3. Await Analysis (Slower)
+      // This takes longer due to Pro model reasoning
+      const analysisData = await analysisPromise;
       setAnalysis(analysisData);
       
       setLoadingState(LoadingState.COMPLETE);
@@ -141,6 +152,17 @@ const App: React.FC = () => {
               <section>
                 <ValuationTool company={company} />
               </section>
+
+              {/* Skeleton Loading for Analysis */}
+              {loadingState === LoadingState.ANALYZING && !analysis && (
+                <div className="space-y-8 animate-pulse">
+                  <div className="h-80 bg-nomad-800 rounded-xl border border-nomad-700/50"></div>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div className="h-96 bg-nomad-800 rounded-xl border border-nomad-700/50"></div>
+                    <div className="h-96 bg-nomad-800 rounded-xl border border-nomad-700/50"></div>
+                  </div>
+                </div>
+              )}
 
               {analysis && (
                 <>

@@ -113,7 +113,15 @@ export const fetchCompanyFinancials = async (ticker: string, apiKey?: string): P
   Note: revenueGrowth5Y should be a decimal (e.g., 0.10 for 10%). Net margin should be the percentage value (e.g., 12.5).
   `;
 
-  const response = await smartGenerate(ai, prompt, [{ googleSearch: {} }]);
+  // SPEED OPTIMIZATION: Use Gemini 2.5 Flash directly for financial data.
+  // It is significantly faster, cheaper, and perfectly capable of structured data extraction.
+  const response = await retryWithBackoff(async () => {
+    return await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: prompt,
+      config: { tools: [{ googleSearch: {} }] },
+    });
+  });
 
   const text = response.text || "";
   
@@ -196,6 +204,7 @@ export const analyzeMoatRobustness = async (ticker: string, companyName: string,
   \`\`\`
   `;
 
+  // Keep Analysis on Smart Generate (Pro -> Flash) for reasoning quality
   const response = await smartGenerate(ai, prompt, [{ googleSearch: {} }]);
 
   const text = response.text || "";
