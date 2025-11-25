@@ -13,6 +13,7 @@ export interface CompanyData {
     year: string;
     revenue: number;
     netMargin: number;
+    eps: number; // Added EPS history
   }[];
   ttmFinancials: {
     netIncome: number;

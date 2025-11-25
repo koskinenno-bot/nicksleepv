@@ -14,7 +14,7 @@ const getClient = (apiKey?: string) => {
 /**
  * Retries an async operation with exponential backoff if a 429 (Rate Limit) or 503 (Overloaded) error occurs.
  */
-const retryWithBackoff = async <T>(fn: () => Promise<T>, retries = 3, delay = 1000): Promise<T> => {
+const retryWithBackoff = async <T>(fn: () => Promise<T>, retries = 5, delay = 1000): Promise<T> => {
   try {
     return await fn();
   } catch (error: any) {
@@ -76,7 +76,7 @@ export const fetchCompanyFinancials = async (ticker: string, apiKey?: string): P
   const prompt = `
   Find the most recent financial data for ${ticker}. 
   I need the Current Stock Price, TTM Earnings Per Share (EPS), TTM Free Cash Flow (FCF) per share, and the Company Name.
-  Also, find the annual Revenue (in billions) and Net Profit Margin (as a percentage) for the last 5 years (2020-2024 approx).
+  Also, find the annual Revenue (in billions), Net Profit Margin (as a percentage), and EPS (Earnings Per Share) for the last 5-7 years (approx 2018-2024).
   
   CRITICAL: I also need the following TTM (Trailing Twelve Months) absolute values in BILLIONS USD to calculate Owner's Earnings:
   1. Net Income (TTM)
@@ -98,8 +98,8 @@ export const fetchCompanyFinancials = async (ticker: string, apiKey?: string): P
     "revenueGrowth5Y": 0.15,
     "description": "Short one sentence description.",
     "financials": [
-      {"year": "2020", "revenue": 50.5, "netMargin": 12.5},
-      {"year": "2021", "revenue": 60.2, "netMargin": 13.0}
+      {"year": "2020", "revenue": 50.5, "netMargin": 12.5, "eps": 3.20},
+      {"year": "2021", "revenue": 60.2, "netMargin": 13.0, "eps": 3.80}
     ],
     "ttmFinancials": {
       "netIncome": 10.5,

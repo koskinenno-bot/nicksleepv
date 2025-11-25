@@ -9,6 +9,7 @@ import NewsFeed from './components/NewsFeed';
 import PresentationCard from './components/PresentationCard';
 import KpiDashboard from './components/KpiDashboard';
 import ApiKeyInput from './components/ApiKeyInput';
+import WatchlistBar from './components/WatchlistBar';
 
 const App: React.FC = () => {
   const [apiKey, setApiKey] = useState<string>('');
@@ -16,16 +17,26 @@ const App: React.FC = () => {
   const [company, setCompany] = useState<CompanyData | null>(null);
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [watchlist, setWatchlist] = useState<string[]>([]);
 
-  // Check for key on mount
+  // Check for key and watchlist on mount
   useEffect(() => {
     const storedKey = localStorage.getItem('gemini_api_key');
     const envKey = process.env.API_KEY;
+    const storedWatchlist = localStorage.getItem('nomad_watchlist');
     
     if (storedKey) {
       setApiKey(storedKey);
     } else if (envKey) {
       setApiKey(envKey);
+    }
+
+    if (storedWatchlist) {
+      try {
+        setWatchlist(JSON.parse(storedWatchlist));
+      } catch (e) {
+        console.error("Failed to parse watchlist", e);
+      }
     }
   }, []);
 
@@ -40,6 +51,21 @@ const App: React.FC = () => {
     setCompany(null);
     setAnalysis(null);
     setError(null);
+  };
+
+  const addToWatchlist = (ticker: string) => {
+    const t = ticker.toUpperCase();
+    if (!watchlist.includes(t)) {
+      const updated = [...watchlist, t];
+      setWatchlist(updated);
+      localStorage.setItem('nomad_watchlist', JSON.stringify(updated));
+    }
+  };
+
+  const removeFromWatchlist = (ticker: string) => {
+    const updated = watchlist.filter(t => t !== ticker);
+    setWatchlist(updated);
+    localStorage.setItem('nomad_watchlist', JSON.stringify(updated));
   };
 
   const handleSearch = async (ticker: string) => {
@@ -98,7 +124,14 @@ const App: React.FC = () => {
     <div className="min-h-screen bg-nomad-950 pb-20 relative selection:bg-yellow-500/30 selection:text-yellow-100">
       <SearchHeader onSearch={handleSearch} loadingState={loadingState} />
 
-      <main className="max-w-6xl mx-auto px-6 mt-12 space-y-16">
+      {/* Watchlist Bar */}
+      <WatchlistBar 
+        watchlist={watchlist} 
+        onSelect={handleSearch} 
+        onRemove={removeFromWatchlist} 
+      />
+
+      <main className="max-w-6xl mx-auto px-6 mt-6 space-y-16">
         
         {/* Error State */}
         {loadingState === LoadingState.ERROR && (
@@ -118,7 +151,7 @@ const App: React.FC = () => {
         )}
 
         {/* Empty State */}
-        {loadingState === LoadingState.IDLE && (
+        {loadingState === LoadingState.IDLE && watchlist.length === 0 && (
           <div className="text-center mt-20 opacity-40">
             <div className="text-7xl mb-6 grayscale opacity-50">🏰</div>
             <p className="font-serif text-2xl text-nomad-300 font-light">Enter a ticker to analyze the moat.</p>
@@ -138,6 +171,15 @@ const App: React.FC = () => {
                 <div className="flex items-center gap-3 mt-2">
                     <span className="text-xl text-nomad-400 font-sans font-medium">{company.ticker}</span>
                     <span className="px-2 py-1 rounded bg-nomad-800 text-xs text-nomad-300 border border-nomad-700">${company.price.toFixed(2)}</span>
+                    
+                    {/* Add to Watchlist Button */}
+                    <button 
+                      onClick={() => addToWatchlist(company.ticker)}
+                      disabled={watchlist.includes(company.ticker)}
+                      className="ml-2 flex items-center gap-1 px-3 py-1 rounded-full bg-yellow-600/20 hover:bg-yellow-600/30 border border-yellow-600/30 text-yellow-500 text-xs uppercase tracking-wider font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {watchlist.includes(company.ticker) ? 'Saved' : '+ Watchlist'}
+                    </button>
                 </div>
                 <p className="text-nomad-400 mt-4 max-w-3xl text-lg font-light leading-relaxed">{company.description}</p>
               </div>

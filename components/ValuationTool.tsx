@@ -22,6 +22,33 @@ const ValuationTool: React.FC<Props> = ({ company }) => {
     setShowCalculator(false);
   }, [company]);
   
+  // Calculate Historical EPS CAGR
+  const epsCagr = useMemo(() => {
+    if (!company.financials || company.financials.length < 2) return null;
+    
+    // Sort by year to be safe
+    const sorted = [...company.financials].sort((a, b) => parseInt(a.year) - parseInt(b.year));
+    
+    // Filter out missing EPS or zero EPS (can't calc CAGR on zero/negative starts easily/meaningfully for this display)
+    const validData = sorted.filter(f => f.eps !== undefined && f.eps !== null);
+    
+    if (validData.length < 2) return null;
+
+    const start = validData[0];
+    const end = validData[validData.length - 1];
+    const years = parseInt(end.year) - parseInt(start.year);
+
+    if (years <= 0 || start.eps <= 0) return null;
+
+    const cagr = Math.pow(end.eps / start.eps, 1 / years) - 1;
+    return {
+      value: cagr,
+      years: years,
+      startYear: start.year,
+      endYear: end.year
+    };
+  }, [company.financials]);
+
   // Use Owner's Earnings (FCF) as the base metric
   // Handle division by zero if ownersEarnings is 0
   const currentMultiple = ownersEarnings !== 0 ? company.price / ownersEarnings : 0;
@@ -100,13 +127,41 @@ const ValuationTool: React.FC<Props> = ({ company }) => {
 
   return (
     <div className="bg-nomad-800 rounded-xl border border-nomad-700 shadow-2xl overflow-hidden">
-      <div className="p-6 md:p-8 border-b border-nomad-700 bg-gradient-to-r from-nomad-800 to-nomad-900">
-        <h2 className="text-2xl font-serif text-nomad-50 tracking-tight">
-          Valuation & Returns
-        </h2>
-        <p className="text-nomad-400 text-sm mt-2">
-          Based on Owner's Earnings (FCF), inspired by Nomad Investment Partnership.
-        </p>
+      <div className="p-6 md:p-8 border-b border-nomad-700 bg-gradient-to-r from-nomad-800 to-nomad-900 flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+        <div>
+            <h2 className="text-2xl font-serif text-nomad-50 tracking-tight">
+            Valuation & Returns
+            </h2>
+            <p className="text-nomad-400 text-sm mt-2">
+            Based on Owner's Earnings (FCF), inspired by Nomad Investment Partnership.
+            </p>
+        </div>
+        
+        {/* EPS CAGR Badge */}
+        <div className="flex items-center">
+            {epsCagr ? (
+                <div className="bg-nomad-900/80 border border-nomad-600 rounded-lg p-3 shadow-inner">
+                    <p className="text-[10px] text-nomad-500 uppercase tracking-widest font-bold">
+                        Historical EPS Growth
+                    </p>
+                    <div className="flex items-baseline gap-2 mt-1">
+                        <span className={`text-xl font-bold font-mono ${epsCagr.value >= 0.10 ? 'text-green-400' : 'text-nomad-200'}`}>
+                            {(epsCagr.value * 100).toFixed(1)}%
+                        </span>
+                        <span className="text-xs text-nomad-500">
+                             ({epsCagr.years}y CAGR)
+                        </span>
+                    </div>
+                </div>
+            ) : (
+                 <div className="bg-nomad-900/50 border border-nomad-700 rounded-lg p-3">
+                    <p className="text-[10px] text-nomad-500 uppercase tracking-widest font-bold">
+                        Historical EPS
+                    </p>
+                    <p className="text-sm text-nomad-400 mt-1">Data not available</p>
+                 </div>
+            )}
+        </div>
       </div>
       
       <div className="p-6 md:p-8 space-y-10 bg-nomad-900/50">
