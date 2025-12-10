@@ -24,7 +24,7 @@ const MoatAnalyzer: React.FC<Props> = ({ company, analysis }) => {
       <div className="bg-nomad-800 rounded-xl p-6 md:p-8 border border-nomad-700 shadow-2xl">
          <div className="flex justify-between items-end mb-8 border-b border-nomad-700 pb-4">
             <h2 className="text-2xl font-serif text-nomad-50 tracking-tight">
-              Scale Economics Shared
+              {analysis.moatSource && analysis.moatSource !== "Unknown" ? analysis.moatSource : "Scale Economics Shared"}
             </h2>
             <span className="text-xs text-nomad-500 uppercase tracking-widest font-semibold">5 Year Trend</span>
          </div>

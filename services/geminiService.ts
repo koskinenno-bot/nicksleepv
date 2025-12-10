@@ -155,7 +155,7 @@ export const analyzeMoatRobustness = async (ticker: string, companyName: string,
 
   2. General Moat Analysis (Morningstar style):
      - Verdict: "Wide", "Narrow", or "None".
-     - Primary Source: "Network Effects", "Switching Costs", "Intangible Assets", "Cost Advantage", or "Efficient Scale".
+     - Primary Source: "Scale Economics Shared", "Network Effects", "Switching Costs", "Intangible Assets", "Cost Advantage", or "Efficient Scale".
      - Detailed explanation of the moat.
 
   3. Recent News:
