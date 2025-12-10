@@ -85,6 +85,7 @@ export const fetchCompanyFinancials = async (ticker: string, apiKey?: string): P
   4. Capital Expenditures (TTM) - Return as a positive number.
   5. Change in Working Capital (TTM)
   6. Shares Outstanding (in Billions)
+  7. suggestedMaintenanceCapexPct: Estimate the 'maintenance' portion of CapEx as a percentage (0-100) based on the company's industry and history. (e.g. 90-100% for mature utilities, 10-30% for high growth SaaS).
 
   Format the output strictly as a JSON object inside a code block like this:
   \`\`\`json
@@ -106,7 +107,8 @@ export const fetchCompanyFinancials = async (ticker: string, apiKey?: string): P
       "depreciation": 2.5,
       "stockBasedCompensation": 1.2,
       "capitalExpenditures": 3.0,
-      "changeInWorkingCapital": -0.5
+      "changeInWorkingCapital": -0.5,
+      "suggestedMaintenanceCapexPct": 65
     }
   }
   \`\`\`

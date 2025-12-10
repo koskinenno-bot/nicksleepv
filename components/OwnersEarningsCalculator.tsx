@@ -18,6 +18,11 @@ const OwnersEarningsCalculator: React.FC<Props> = ({ company, onApply, onClose }
   const [maintenancePct, setMaintenancePct] = useState(100); // Default to 100% of CapEx
   const [shares, setShares] = useState(company.sharesOutstanding || 1);
 
+  // Suggested Maintenance CapEx (from AI)
+  const suggestedPct = company.ttmFinancials?.suggestedMaintenanceCapexPct;
+  // Depr / CapEx Ratio (Common Proxy)
+  const deprToCapex = capex > 0 ? Math.min(Math.round((depreciation / capex) * 100), 100) : 0;
+
   // Derived values
   const maintenanceCapex = (capex * (maintenancePct / 100));
   
@@ -123,11 +128,23 @@ const OwnersEarningsCalculator: React.FC<Props> = ({ company, onApply, onClose }
             </div>
           </div>
 
-          <div className="bg-nomad-800/50 p-5 rounded-lg border border-nomad-700/50 hover:border-nomad-600 transition-colors">
+          <div className="bg-nomad-800/50 p-5 rounded-lg border border-nomad-700/50 hover:border-nomad-600 transition-colors relative">
             <div className="flex justify-between items-baseline mb-3">
                <label className="block text-xs uppercase tracking-wider text-nomad-500">CapEx ($B)</label>
-               <div className="text-xs text-yellow-600 font-medium bg-yellow-900/20 px-2 py-1 rounded">
-                 Est. Maintenance: {maintenancePct}%
+               <div className="flex items-center gap-2">
+                 {/* Smart Suggestion Button */}
+                 {suggestedPct !== undefined && (
+                   <button 
+                     onClick={() => setMaintenancePct(suggestedPct)}
+                     className="text-[10px] bg-yellow-900/30 text-yellow-500 border border-yellow-700/50 px-2 py-0.5 rounded hover:bg-yellow-900/50 transition-colors flex items-center gap-1"
+                     title={`Based on company industry and history. Depreciation/CapEx is ${deprToCapex}%.`}
+                   >
+                     <span className="animate-pulse">✨</span> AI Suggestion: {suggestedPct}%
+                   </button>
+                 )}
+                 <div className="text-xs text-yellow-600 font-medium bg-nomad-900/30 px-2 py-1 rounded">
+                   Maint: {maintenancePct}%
+                 </div>
                </div>
             </div>
             <div className="flex items-center mb-4">
@@ -147,9 +164,14 @@ const OwnersEarningsCalculator: React.FC<Props> = ({ company, onApply, onClose }
                onChange={(e) => setMaintenancePct(Number(e.target.value))}
                className="w-full accent-yellow-500 h-1 bg-nomad-700 rounded-lg appearance-none cursor-pointer"
             />
-             <p className="text-[10px] text-nomad-500 mt-2 text-right">
-               Total Maintenance CapEx: <span className="text-red-400 font-mono">-${maintenanceCapex.toFixed(2)}B</span>
-            </p>
+             <div className="flex justify-between items-center mt-2">
+               <span className="text-[10px] text-nomad-500">
+                 Depr/CapEx: <span className="text-nomad-400">{deprToCapex}%</span>
+               </span>
+               <p className="text-[10px] text-nomad-500">
+                 Maint. CapEx: <span className="text-red-400 font-mono">-${maintenanceCapex.toFixed(2)}B</span>
+              </p>
+             </div>
           </div>
 
         </div>

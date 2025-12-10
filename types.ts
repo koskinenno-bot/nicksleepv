@@ -21,6 +21,7 @@ export interface CompanyData {
     stockBasedCompensation: number;
     changeInWorkingCapital: number;
     capitalExpenditures: number;
+    suggestedMaintenanceCapexPct?: number; // AI estimated percentage
   };
 }
 
