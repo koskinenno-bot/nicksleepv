@@ -5,9 +5,12 @@ import { fetchCompanyFinancials, analyzeMoatRobustness } from './services/gemini
 import SearchHeader from './components/SearchHeader';
 import ValuationTool from './components/ValuationTool';
 import MoatAnalyzer from './components/MoatAnalyzer';
+import DestinationAnalysis from './components/DestinationAnalysis';
+import ManagementAnalysis from './components/ManagementAnalysis';
 import NewsFeed from './components/NewsFeed';
 import PresentationCard from './components/PresentationCard';
 import KpiDashboard from './components/KpiDashboard';
+import NomadWisdom from './components/NomadWisdom';
 import ApiKeyInput from './components/ApiKeyInput';
 import WatchlistBar from './components/WatchlistBar';
 
@@ -195,6 +198,10 @@ const App: React.FC = () => {
                 <ValuationTool company={company} />
               </section>
 
+              <section className="animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-100">
+                <DestinationAnalysis company={company} />
+              </section>
+
               {/* Skeleton Loading for Analysis */}
               {loadingState === LoadingState.ANALYZING && !analysis && (
                 <div className="space-y-8 animate-pulse">
@@ -208,8 +215,13 @@ const App: React.FC = () => {
 
               {analysis && (
                 <>
-                  <section className="animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-200">
-                    <MoatAnalyzer company={company} analysis={analysis} />
+                  <section className="animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-200 grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div className="lg:col-span-2">
+                      <MoatAnalyzer company={company} analysis={analysis} />
+                    </div>
+                    <div className="lg:col-span-1">
+                      <ManagementAnalysis analysis={analysis} />
+                    </div>
                   </section>
 
                   {/* KPI Section */}
@@ -241,6 +253,8 @@ const App: React.FC = () => {
             </div>
           </div>
         )}
+        
+        {company && <NomadWisdom />}
       </main>
       
       <footer className="mt-32 py-12 text-center border-t border-nomad-900 bg-nomad-950">

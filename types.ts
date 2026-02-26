@@ -60,6 +60,12 @@ export interface AnalysisResult {
     url: string;
   };
   kpis?: KpiItem[];
+  managementAnalysis?: {
+    score: number; // 1-10
+    verdict: string; // e.g. "Fanatical", "Long-term", "Corporate"
+    details: string;
+    traits: string[];
+  };
 }
 
 export interface ValuationScenario {

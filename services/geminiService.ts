@@ -173,7 +173,14 @@ export const analyzeMoatRobustness = async (ticker: string, companyName: string,
      - Identify 3-4 critical quantitative KPIs that drive this specific business (e.g. for Netflix: "Global Paid Subs"; for Retail: "Same Store Sales" or "Store Count"; for Tech: "Daily Active Users" or "Cloud Revenue").
      - Provide 3-5 years of historical data for each KPI.
      - Ensure the 'value' is a number (no symbols).
-     
+
+  6. Management Integrity & Long-termism (Nick Sleep style):
+     - Analyze the CEO and management team's reputation and communication.
+     - Look for "Sleep-like" traits: Long-term focus (decades), customer-centricity, cost-consciousness, and honesty/transparency.
+     - Verdict: "Fanatical", "Long-term", "Standard", or "Short-term".
+     - Score 1-10 (10 = Jeff Bezos/Warren Buffett style).
+     - Provide 3 specific traits and a detailed analysis.
+      
   Format the output strictly as a JSON object inside a code block:
   \`\`\`json
   {
@@ -201,7 +208,13 @@ export const analyzeMoatRobustness = async (ticker: string, companyName: string,
            {"year": "2021", "value": 221.8}
          ]
        }
-    ]
+    ],
+    "managementAnalysis": {
+      "score": 9,
+      "verdict": "Fanatical",
+      "details": "Detailed analysis of management's long-term orientation...",
+      "traits": ["Customer Obsessed", "Low Cost Culture", "Long-term Horizon"]
+    }
   }
   \`\`\`
   `;
@@ -212,7 +225,7 @@ export const analyzeMoatRobustness = async (ticker: string, companyName: string,
   const text = response.text || "";
   const jsonMatch = text.match(/```json\n([\s\S]*?)\n```/);
   
-  let result: Partial<AnalysisResult> = {};
+  let result: any = {};
   if (jsonMatch) {
     try {
       result = JSON.parse(jsonMatch[1]);
@@ -230,7 +243,13 @@ export const analyzeMoatRobustness = async (ticker: string, companyName: string,
       moatSource: "Unknown",
       moatDescription: "Analysis failed to parse.",
       news: [],
-      kpis: []
+      kpis: [],
+      managementAnalysis: {
+        score: 5,
+        verdict: "Unknown",
+        details: "Analysis failed to parse.",
+        traits: []
+      }
     };
   }
 
@@ -252,6 +271,7 @@ export const analyzeMoatRobustness = async (ticker: string, companyName: string,
     news: result.news || [],
     investorPresentation: result.investorPresentation,
     kpis: result.kpis || [],
+    managementAnalysis: result.managementAnalysis,
     sources: sources as any
   };
 };
