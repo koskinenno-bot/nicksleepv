@@ -14,9 +14,16 @@ const DestinationAnalysis: React.FC<Props> = ({ company }) => {
   const [targetMultiple, setTargetMultiple] = useState(20);
   const [shareReduction, setShareReduction] = useState(0.01); // 1% annual buyback
   const [years, setYears] = useState(10);
+  
+  // Manual Revenue Override
+  const initialRev = company.financials?.[company.financials.length - 1]?.revenue || 10;
+  const [currentRev, setCurrentRev] = useState(initialRev);
 
-  // Current TTM Revenue (Approx from financials or derived)
-  const currentRev = company.financials?.[company.financials.length - 1]?.revenue || 10;
+  // Update currentRev when company changes
+  React.useEffect(() => {
+    setCurrentRev(initialRev);
+  }, [initialRev]);
+
   const currentShares = company.sharesOutstanding || 1;
 
   const results = useMemo(() => {
@@ -57,6 +64,24 @@ const DestinationAnalysis: React.FC<Props> = ({ company }) => {
         {/* Left: Inputs */}
         <div className="lg:col-span-5 space-y-8">
           <div className="space-y-6">
+            
+            {/* Current Revenue Input */}
+            <div className="bg-nomad-900/40 p-4 rounded-lg border border-nomad-700/50 group focus-within:border-yellow-500/50 transition-colors">
+              <div className="flex justify-between mb-2">
+                <label className="text-xs uppercase tracking-widest text-nomad-500 font-bold">Current Revenue ($B)</label>
+                <span className="text-[10px] text-nomad-600 font-mono">Manual Entry</span>
+              </div>
+              <div className="flex items-center">
+                <span className="text-nomad-600 mr-2 font-mono text-lg">$</span>
+                <input 
+                  type="number" 
+                  value={currentRev} 
+                  onChange={e => setCurrentRev(parseFloat(e.target.value) || 0)}
+                  className="w-full bg-transparent text-xl text-nomad-100 font-mono focus:outline-none"
+                />
+              </div>
+            </div>
+
             <div className="group">
               <div className="flex justify-between mb-2">
                 <label className="text-xs uppercase tracking-widest text-nomad-500 font-bold">Revenue Growth (CAGR)</label>
