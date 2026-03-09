@@ -17,6 +17,65 @@ const MoatAnalyzer: React.FC<Props> = ({ company, analysis }) => {
     return 'bg-red-900/30 text-red-400 border-red-800/50';
   };
 
+  const getVisualPatternDescription = (source: string) => {
+    const s = source.toLowerCase();
+    
+    if (s.includes('scale economics shared')) {
+      return (
+        <>
+          Nick Sleep looked for <span className="text-white font-medium">Revenue (Bars)</span> growing while <span className="text-yellow-500 font-medium">Margins (Line)</span> stayed flat or declined. This suggests the company is "sharing" economies of scale with the customer to widen the moat.
+        </>
+      );
+    }
+    
+    if (s.includes('switching costs')) {
+      return (
+        <>
+          High switching costs often lead to <span className="text-white font-medium">Revenue (Bars)</span> growth with stable or expanding <span className="text-yellow-500 font-medium">Margins (Line)</span>, as customers are locked in and the company retains significant pricing power.
+        </>
+      );
+    }
+    
+    if (s.includes('network effects')) {
+      return (
+        <>
+          Network effects create a virtuous cycle where <span className="text-white font-medium">Revenue (Bars)</span> can grow exponentially while <span className="text-yellow-500 font-medium">Margins (Line)</span> expand rapidly due to the low marginal cost of adding new users.
+        </>
+      );
+    }
+    
+    if (s.includes('intangible assets')) {
+      return (
+        <>
+          Strong intangible assets (brands, patents) allow for premium pricing, typically reflected in consistently high <span className="text-yellow-500 font-medium">Margins (Line)</span> even as <span className="text-white font-medium">Revenue (Bars)</span> scales.
+        </>
+      );
+    }
+    
+    if (s.includes('cost advantage')) {
+      return (
+        <>
+          A structural cost advantage allows the company to maintain superior <span className="text-yellow-500 font-medium">Margins (Line)</span> compared to competitors, or to grow <span className="text-white font-medium">Revenue (Bars)</span> by undercutting them while keeping margins healthy.
+        </>
+      );
+    }
+    
+    if (s.includes('efficient scale')) {
+      return (
+        <>
+          In markets with efficient scale, a dominant player can grow <span className="text-white font-medium">Revenue (Bars)</span> steadily with protected <span className="text-yellow-500 font-medium">Margins (Line)</span> because the market size doesn't justify a second competitor's entry.
+        </>
+      );
+    }
+
+    // Default fallback
+    return (
+      <>
+        Analyze how <span className="text-white font-medium">Revenue (Bars)</span> and <span className="text-yellow-500 font-medium">Margins (Line)</span> interact. A widening gap or stable high margins often indicate a strengthening competitive advantage.
+      </>
+    );
+  };
+
   return (
     <div className="space-y-8">
       
@@ -57,7 +116,7 @@ const MoatAnalyzer: React.FC<Props> = ({ company, analysis }) => {
                 <h4 className="text-nomad-200 text-sm font-bold">Visual Pattern</h4>
               </div>
               <p className="text-nomad-400 text-sm leading-relaxed">
-                Nick Sleep looked for <span className="text-white font-medium">Revenue (Bars)</span> growing while <span className="text-yellow-500 font-medium">Margins (Line)</span> stayed flat or declined. This suggests the company is "sharing" economies of scale with the customer to widen the moat.
+                {getVisualPatternDescription(analysis.moatSource || "Scale Economics Shared")}
               </p>
             </div>
           </div>

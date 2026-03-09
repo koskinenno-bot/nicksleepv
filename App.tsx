@@ -7,6 +7,8 @@ import ValuationTool from './components/ValuationTool';
 import MoatAnalyzer from './components/MoatAnalyzer';
 import DestinationAnalysis from './components/DestinationAnalysis';
 import ManagementAnalysis from './components/ManagementAnalysis';
+import CapitalAllocation from './components/CapitalAllocation';
+import NomadChecklist from './components/NomadChecklist';
 import NewsFeed from './components/NewsFeed';
 import PresentationCard from './components/PresentationCard';
 import KpiDashboard from './components/KpiDashboard';
@@ -230,6 +232,18 @@ const App: React.FC = () => {
                       <KpiDashboard kpis={analysis.kpis} />
                     </section>
                   )}
+
+                  {/* Capital Allocation Section */}
+                  {analysis.capitalAllocation && analysis.capitalAllocation.length > 0 && (
+                    <section className="animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-275">
+                      <CapitalAllocation data={analysis.capitalAllocation} />
+                    </section>
+                  )}
+
+                  {/* Nomad Checklist Section */}
+                  <section className="animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-285">
+                    <NomadChecklist company={company} analysis={analysis} />
+                  </section>
 
                   {/* Investor Presentation & News Section */}
                   <section className="animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300 grid grid-cols-1 lg:grid-cols-3 gap-8">

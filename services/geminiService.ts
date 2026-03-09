@@ -162,6 +162,8 @@ export const analyzeMoatRobustness = async (ticker: string, companyName: string,
 
   3. Recent News:
      - Find 3 recent news headlines/events relevant to the company stock or business from the last 30 days.
+     - Categorize each as "Signal" (long-term business impact) or "Noise" (short-term volatility, macro, or sentiment).
+     - Provide a brief 1-sentence reasoning for the categorization.
   
   4. Investor Presentation:
      - SEARCH for the latest "Investor Presentation" or "Earnings Slides" for ${companyName}.
@@ -180,6 +182,12 @@ export const analyzeMoatRobustness = async (ticker: string, companyName: string,
      - Verdict: "Fanatical", "Long-term", "Standard", or "Short-term".
      - Score 1-10 (10 = Jeff Bezos/Warren Buffett style).
      - Provide 3 specific traits and a detailed analysis.
+
+  7. Capital Allocation (Moat Widening):
+     - Find historical data for the last 3-5 years for:
+       a) Reinvestment: Sum of CapEx and R&D (in Billions).
+       b) Payout: Sum of Dividends and Share Buybacks (in Billions).
+     - This helps see if the company is reinvesting to widen the moat or harvesting profits.
       
   Format the output strictly as a JSON object inside a code block:
   \`\`\`json
@@ -191,8 +199,13 @@ export const analyzeMoatRobustness = async (ticker: string, companyName: string,
     "moatSource": "Cost Advantage",
     "moatDescription": "Explanation of why the moat is wide/narrow...",
     "news": [
-      {"title": "Headline 1", "date": "YYYY-MM-DD", "source": "Bloomberg"},
-      {"title": "Headline 2", "date": "...", "source": "Reuters"}
+      {
+        "title": "Headline 1", 
+        "date": "YYYY-MM-DD", 
+        "source": "Bloomberg",
+        "category": "Signal",
+        "reasoning": "Indicates long-term expansion into new markets."
+      }
     ],
     "investorPresentation": {
        "title": "Q3 2024 Earnings Slides",
@@ -214,7 +227,11 @@ export const analyzeMoatRobustness = async (ticker: string, companyName: string,
       "verdict": "Fanatical",
       "details": "Detailed analysis of management's long-term orientation...",
       "traits": ["Customer Obsessed", "Low Cost Culture", "Long-term Horizon"]
-    }
+    },
+    "capitalAllocation": [
+      {"year": "2020", "reinvestment": 15.2, "payout": 5.1},
+      {"year": "2021", "reinvestment": 18.5, "payout": 4.8}
+    ]
   }
   \`\`\`
   `;
@@ -249,7 +266,8 @@ export const analyzeMoatRobustness = async (ticker: string, companyName: string,
         verdict: "Unknown",
         details: "Analysis failed to parse.",
         traits: []
-      }
+      },
+      capitalAllocation: []
     };
   }
 
@@ -272,6 +290,7 @@ export const analyzeMoatRobustness = async (ticker: string, companyName: string,
     investorPresentation: result.investorPresentation,
     kpis: result.kpis || [],
     managementAnalysis: result.managementAnalysis,
+    capitalAllocation: result.capitalAllocation || [],
     sources: sources as any
   };
 };

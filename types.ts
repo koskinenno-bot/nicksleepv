@@ -29,6 +29,14 @@ export interface NewsItem {
   title: string;
   date: string;
   source: string;
+  category?: 'Signal' | 'Noise';
+  reasoning?: string;
+}
+
+export interface CapitalAllocationData {
+  reinvestment: number; // CapEx + R&D
+  payout: number; // Dividends + Buybacks
+  year: string;
 }
 
 export interface KpiDataPoint {
@@ -66,6 +74,7 @@ export interface AnalysisResult {
     details: string;
     traits: string[];
   };
+  capitalAllocation?: CapitalAllocationData[];
 }
 
 export interface ValuationScenario {
