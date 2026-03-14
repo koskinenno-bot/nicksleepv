@@ -86,6 +86,8 @@ export const fetchCompanyFinancials = async (ticker: string, apiKey?: string): P
   5. Change in Working Capital (TTM)
   6. Shares Outstanding (in Billions)
   7. suggestedMaintenanceCapexPct: Estimate the 'maintenance' portion of CapEx as a percentage (0-100) based on the company's industry and history. (e.g. 90-100% for mature utilities, 10-30% for high growth SaaS).
+  8. Historical Change in Working Capital: For each year in the 'financials' list, find the 'Change in Working Capital' (in billions). Use the cash flow convention: positive for cash inflow (e.g. decrease in inventory), negative for cash outflow (e.g. increase in receivables).
+  9. normalizedWorkingCapital: Calculate the average 'Change in Working Capital' over the last 5-10 years using the same convention.
 
   Format the output strictly as a JSON object inside a code block like this:
   \`\`\`json
@@ -99,8 +101,8 @@ export const fetchCompanyFinancials = async (ticker: string, apiKey?: string): P
     "revenueGrowth5Y": 0.15,
     "description": "Short one sentence description.",
     "financials": [
-      {"year": "2020", "revenue": 50.5, "netMargin": 12.5, "eps": 3.20},
-      {"year": "2021", "revenue": 60.2, "netMargin": 13.0, "eps": 3.80}
+      {"year": "2020", "revenue": 50.5, "netMargin": 12.5, "eps": 3.20, "changeInWorkingCapital": -0.5},
+      {"year": "2021", "revenue": 60.2, "netMargin": 13.0, "eps": 3.80, "changeInWorkingCapital": 0.2}
     ],
     "ttmFinancials": {
       "netIncome": 10.5,
@@ -108,6 +110,7 @@ export const fetchCompanyFinancials = async (ticker: string, apiKey?: string): P
       "stockBasedCompensation": 1.2,
       "capitalExpenditures": 3.0,
       "changeInWorkingCapital": -0.5,
+      "normalizedWorkingCapital": -0.15,
       "suggestedMaintenanceCapexPct": 65
     }
   }
@@ -185,8 +188,12 @@ export const analyzeMoatRobustness = async (ticker: string, companyName: string,
 
   7. Capital Allocation (Moat Widening):
      - Find historical data for the last 3-5 years for:
-       a) Reinvestment: Sum of CapEx and R&D (in Billions).
-       b) Payout: Sum of Dividends and Share Buybacks (in Billions).
+       a) CapEx (in Billions)
+       b) R&D (in Billions)
+       c) Dividends Paid (in Billions)
+       d) Share Buybacks (in Billions)
+       e) Total Revenue (in Billions)
+       f) Average Market Cap for that year (in Billions)
      - This helps see if the company is reinvesting to widen the moat or harvesting profits.
 
   8. Destination Analysis Suggestions:
@@ -234,8 +241,17 @@ export const analyzeMoatRobustness = async (ticker: string, companyName: string,
       "traits": ["Customer Obsessed", "Low Cost Culture", "Long-term Horizon"]
     },
     "capitalAllocation": [
-      {"year": "2020", "reinvestment": 15.2, "payout": 5.1},
-      {"year": "2021", "reinvestment": 18.5, "payout": 4.8}
+      {
+        "year": "2020", 
+        "capex": 10.2, 
+        "rd": 5.0, 
+        "dividends": 2.1, 
+        "buybacks": 3.0, 
+        "revenue": 100.0, 
+        "marketCap": 500.0,
+        "reinvestment": 15.2,
+        "payout": 5.1
+      }
     ],
     "destinationSuggestions": [
       {

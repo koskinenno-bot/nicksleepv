@@ -128,7 +128,7 @@ const App: React.FC = () => {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto custom-scrollbar">
-        <SearchHeader onSearch={handleSearch} loadingState={loadingState} />
+        <SearchHeader onSearch={handleSearch} loadingState={loadingState} compact={!!company} />
 
         <main className="max-w-6xl mx-auto w-full px-6 mt-6 space-y-16 flex-1">
           

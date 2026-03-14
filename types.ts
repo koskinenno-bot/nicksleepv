@@ -21,12 +21,14 @@ export interface CompanyData {
     revenue: number;
     netMargin: number;
     eps: number; // Added EPS history
+    changeInWorkingCapital?: number; // Added for normalization
   }[];
   ttmFinancials: {
     netIncome: number;
     depreciation: number;
     stockBasedCompensation: number;
     changeInWorkingCapital: number;
+    normalizedWorkingCapital?: number; // 5-10 year average
     capitalExpenditures: number;
     suggestedMaintenanceCapexPct?: number; // AI estimated percentage
   };
@@ -41,9 +43,15 @@ export interface NewsItem {
 }
 
 export interface CapitalAllocationData {
-  reinvestment: number; // CapEx + R&D
-  payout: number; // Dividends + Buybacks
   year: string;
+  capex: number;
+  rd: number;
+  dividends: number;
+  buybacks: number;
+  revenue: number;
+  marketCap: number;
+  reinvestment: number; // Sum of capex + rd
+  payout: number; // Sum of dividends + buybacks
 }
 
 export interface KpiDataPoint {

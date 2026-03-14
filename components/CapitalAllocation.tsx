@@ -38,6 +38,7 @@ const CapitalAllocation: React.FC<Props> = ({ data }) => {
               <YAxis stroke="#94a3b8" tick={{fontSize: 12}} label={{ value: 'Amount ($B)', angle: -90, position: 'insideLeft', fill: '#94a3b8', fontSize: 10 }} />
               <Tooltip 
                 contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #475569', borderRadius: '8px', color: '#f1f5f9' }}
+                formatter={(value: number) => [`$${value.toFixed(2)}B`]}
               />
               <Legend wrapperStyle={{ paddingTop: '15px', fontSize: '12px' }} />
               <Bar dataKey="reinvestment" name="Reinvestment (CapEx + R&D)" fill="#3b82f6" radius={[4, 4, 0, 0]} fillOpacity={0.8} />
@@ -72,6 +73,73 @@ const CapitalAllocation: React.FC<Props> = ({ data }) => {
             </p>
           </div>
         </div>
+      </div>
+
+      {/* Detailed Metrics Table */}
+      <div className="mt-12 overflow-x-auto">
+        <table className="w-full text-left text-xs border-collapse">
+          <thead>
+            <tr className="border-b border-nomad-700">
+              <th className="py-3 px-4 text-nomad-500 font-semibold uppercase tracking-wider">Metric</th>
+              {data.map(d => (
+                <th key={d.year} className="py-3 px-4 text-nomad-200 font-bold text-center">{d.year}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-nomad-800/50">
+            {/* Reinvestment Metrics */}
+            <tr className="group hover:bg-nomad-900/30 transition-colors">
+              <td className="py-3 px-4 text-nomad-300 font-medium">CapEx % Revenue</td>
+              {data.map(d => (
+                <td key={d.year} className="py-3 px-4 text-center font-mono text-blue-400">
+                  {d.revenue > 0 ? ((d.capex / d.revenue) * 100).toFixed(1) : '0.0'}%
+                </td>
+              ))}
+            </tr>
+            <tr className="group hover:bg-nomad-900/30 transition-colors">
+              <td className="py-3 px-4 text-nomad-300 font-medium">R&D % Revenue</td>
+              {data.map(d => (
+                <td key={d.year} className="py-3 px-4 text-center font-mono text-blue-400">
+                  {d.revenue > 0 ? ((d.rd / d.revenue) * 100).toFixed(1) : '0.0'}%
+                </td>
+              ))}
+            </tr>
+            {/* Payout Metrics */}
+            <tr className="group hover:bg-nomad-900/30 transition-colors">
+              <td className="py-3 px-4 text-nomad-300 font-medium">Dividend Yield %</td>
+              {data.map(d => (
+                <td key={d.year} className="py-3 px-4 text-center font-mono text-yellow-500">
+                  {d.marketCap > 0 ? ((d.dividends / d.marketCap) * 100).toFixed(1) : '0.0'}%
+                </td>
+              ))}
+            </tr>
+            <tr className="group hover:bg-nomad-900/30 transition-colors">
+              <td className="py-3 px-4 text-nomad-300 font-medium">Buyback Yield %</td>
+              {data.map(d => (
+                <td key={d.year} className="py-3 px-4 text-center font-mono text-yellow-500">
+                  {d.marketCap > 0 ? ((d.buybacks / d.marketCap) * 100).toFixed(1) : '0.0'}%
+                </td>
+              ))}
+            </tr>
+            {/* Absolute Values (Optional but helpful) */}
+            <tr className="group hover:bg-nomad-900/30 transition-colors border-t border-nomad-700/50">
+              <td className="py-3 px-4 text-nomad-500 italic">Total Reinvestment ($B)</td>
+              {data.map(d => (
+                <td key={d.year} className="py-3 px-4 text-center font-mono text-nomad-400">
+                  ${d.reinvestment.toFixed(1)}B
+                </td>
+              ))}
+            </tr>
+            <tr className="group hover:bg-nomad-900/30 transition-colors">
+              <td className="py-3 px-4 text-nomad-500 italic">Total Payout ($B)</td>
+              {data.map(d => (
+                <td key={d.year} className="py-3 px-4 text-center font-mono text-nomad-400">
+                  ${d.payout.toFixed(1)}B
+                </td>
+              ))}
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   );
