@@ -309,7 +309,27 @@ const ValuationTool: React.FC<Props> = ({ company }) => {
             <div className="flex flex-col gap-1 border-b border-nomad-700 pb-2">
               <div className="flex justify-between items-baseline">
                  <h3 className="text-lg font-medium text-nomad-200">Returns Matrix</h3>
-                 <span className="text-xs text-nomad-500 uppercase tracking-wide">{holdingPeriod}YR CAGR</span>
+                 <span className="text-xs text-nomad-500 uppercase tracking-wide">{holdingPeriod}YR Annualized Return (CAGR)</span>
+              </div>
+            </div>
+
+            {/* Legend */}
+            <div className="flex flex-wrap gap-4 text-[10px] uppercase tracking-widest font-bold">
+              <div className="flex items-center gap-1.5">
+                <div className="w-3 h-3 rounded bg-green-900/40 border border-green-800/30"></div>
+                <span className="text-nomad-400">Market Beating (20%+)</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-3 h-3 rounded bg-yellow-900/20 border border-yellow-800/30"></div>
+                <span className="text-nomad-400">Solid (10-20%)</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-3 h-3 rounded bg-nomad-800 border border-nomad-700"></div>
+                <span className="text-nomad-400">Modest (0-10%)</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-3 h-3 rounded bg-red-900/20 border border-red-800/30"></div>
+                <span className="text-nomad-400">Negative</span>
               </div>
             </div>
 
@@ -317,11 +337,13 @@ const ValuationTool: React.FC<Props> = ({ company }) => {
               <table className="w-full text-center text-sm border-collapse">
                 <thead className="bg-nomad-800">
                   <tr>
-                    <th className="p-3 text-nomad-500 font-normal text-[10px] uppercase tracking-wider border-b border-nomad-700 border-r">Exit P/OE</th>
+                    <th className="p-3 text-nomad-500 font-normal text-[10px] uppercase tracking-wider border-b border-nomad-700 border-r">
+                      If Exit P/OE is...
+                    </th>
                     {growthRatesHeader.map(g => (
                       <th key={g} className="p-2 text-nomad-300 font-medium border-b border-nomad-700 text-xs">
                         {(g * 100).toFixed(0)}%
-                        <span className="block text-[9px] text-nomad-500 font-normal uppercase">Growth</span>
+                        <span className="block text-[9px] text-nomad-500 font-normal uppercase">Annual Growth</span>
                       </th>
                     ))}
                   </tr>
@@ -345,15 +367,21 @@ const ValuationTool: React.FC<Props> = ({ company }) => {
               </table>
             </div>
 
-            <div className="bg-nomad-800/50 p-4 rounded-lg text-xs text-nomad-400 border border-nomad-700/50 flex items-start gap-3">
-               <div className="mt-0.5 text-yellow-500">
-                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+            <div className="bg-nomad-800/50 p-5 rounded-lg border border-nomad-700/50 flex flex-col gap-3">
+               <div className="flex items-center gap-2 text-yellow-500">
+                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
                     <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                  </svg>
+                 <span className="text-xs font-bold uppercase tracking-widest">How to read this matrix</span>
                </div>
-               <p>
-                 <strong className="text-nomad-200">Scenario:</strong> If {company.ticker} grows Owner's Earnings at <span className="text-white">15%</span> and trades at <span className="text-white">25x</span> in {holdingPeriod} years, your annual return is <span className="text-yellow-500 font-bold">{(calculateScenarioCAGR(company.price, ownersEarnings, 0.15, 25, holdingPeriod)*100).toFixed(1)}%</span>.
+               <p className="text-nomad-300 text-sm leading-relaxed">
+                 This table shows your <span className="text-white font-medium">expected annual return</span> based on two variables: how fast the business grows and what multiple the market pays when you sell.
                </p>
+               <div className="p-3 bg-nomad-900/50 rounded border border-nomad-700/30">
+                 <p className="text-xs text-nomad-400">
+                   <span className="text-yellow-500 font-bold">Example:</span> If {company.ticker} grows Owner's Earnings at <span className="text-white font-medium">15%</span> per year and you sell at a <span className="text-white font-medium">25x</span> multiple in {holdingPeriod} years, you would earn <span className={`font-bold ${calculateScenarioCAGR(company.price, ownersEarnings, 0.15, 25, holdingPeriod) >= 0.1 ? 'text-green-400' : 'text-red-400'}`}>{(calculateScenarioCAGR(company.price, ownersEarnings, 0.15, 25, holdingPeriod)*100).toFixed(1)}%</span> every year.
+                 </p>
+               </div>
             </div>
           </div>
 
