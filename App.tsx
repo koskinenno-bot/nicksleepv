@@ -14,7 +14,8 @@ import PresentationCard from './components/PresentationCard';
 import KpiDashboard from './components/KpiDashboard';
 import NomadWisdom from './components/NomadWisdom';
 import ApiKeyInput from './components/ApiKeyInput';
-import WatchlistBar from './components/WatchlistBar';
+import WatchlistSidebar from './components/WatchlistSidebar';
+import { WatchlistItem } from './types';
 
 const App: React.FC = () => {
   const [apiKey, setApiKey] = useState<string>('');
@@ -22,13 +23,13 @@ const App: React.FC = () => {
   const [company, setCompany] = useState<CompanyData | null>(null);
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [watchlist, setWatchlist] = useState<string[]>([]);
+  const [watchlist, setWatchlist] = useState<WatchlistItem[]>([]);
 
   // Check for key and watchlist on mount
   useEffect(() => {
     const storedKey = localStorage.getItem('gemini_api_key');
     const envKey = process.env.API_KEY;
-    const storedWatchlist = localStorage.getItem('nomad_watchlist');
+    const storedWatchlist = localStorage.getItem('nomad_watchlist_v2');
     
     if (storedKey) {
       setApiKey(storedKey);
@@ -58,19 +59,24 @@ const App: React.FC = () => {
     setError(null);
   };
 
-  const addToWatchlist = (ticker: string) => {
-    const t = ticker.toUpperCase();
-    if (!watchlist.includes(t)) {
-      const updated = [...watchlist, t];
+  const addToWatchlist = (comp: CompanyData) => {
+    if (!watchlist.find(item => item.ticker === comp.ticker)) {
+      const newItem: WatchlistItem = {
+        ticker: comp.ticker,
+        name: comp.name,
+        price: comp.price,
+        change: (Math.random() * 4 - 2) // Mock change
+      };
+      const updated = [newItem, ...watchlist];
       setWatchlist(updated);
-      localStorage.setItem('nomad_watchlist', JSON.stringify(updated));
+      localStorage.setItem('nomad_watchlist_v2', JSON.stringify(updated));
     }
   };
 
   const removeFromWatchlist = (ticker: string) => {
-    const updated = watchlist.filter(t => t !== ticker);
+    const updated = watchlist.filter(item => item.ticker !== ticker);
     setWatchlist(updated);
-    localStorage.setItem('nomad_watchlist', JSON.stringify(updated));
+    localStorage.setItem('nomad_watchlist_v2', JSON.stringify(updated));
   };
 
   const handleSearch = async (ticker: string) => {
@@ -83,201 +89,191 @@ const App: React.FC = () => {
 
     // Start both requests in parallel to improve speed
     const financialPromise = fetchCompanyFinancials(ticker, apiKey);
-    
-    // We use ticker as name initially for parallelism. 
-    // The prompt "Analyze AMZN (AMZN)..." works perfectly fine for the AI.
     const analysisPromise = analyzeMoatRobustness(ticker, ticker, apiKey);
 
     try {
-      // 1. Await Financials (Fastest)
-      // This usually finishes quickly (2-3s) as it uses Flash model now
       const financialData = await financialPromise;
       setCompany(financialData);
-      
-      // 2. Update state to show we are still analyzing text
       setLoadingState(LoadingState.ANALYZING);
       
-      // 3. Await Analysis (Slower)
-      // This takes longer due to Pro model reasoning
       const analysisData = await analysisPromise;
       setAnalysis(analysisData);
-      
       setLoadingState(LoadingState.COMPLETE);
     } catch (err: any) {
       console.error(err);
-      
-      // Enhance error message for common codes
       let errorMessage = err.message || "An unexpected error occurred.";
-      
       if (errorMessage.includes("429") || errorMessage.includes("Resource has been exhausted")) {
-        errorMessage = "API Quota Exceeded (429). We tried retrying, but the limit persists. Please ensure your API key is linked to a billing account.";
+        errorMessage = "API Quota Exceeded (429). Please ensure your API key is linked to a billing account.";
       } else if (errorMessage.includes("503") || errorMessage.includes("overloaded")) {
-         errorMessage = "Model Overloaded (503). Google's AI service is currently experiencing high traffic. Please try again in a minute.";
+         errorMessage = "Model Overloaded (503). Please try again in a minute.";
       }
-      
       setError(errorMessage);
       setLoadingState(LoadingState.ERROR);
     }
   };
 
-  // If no API key is present, show the input screen
   if (!apiKey) {
     return <ApiKeyInput onSave={handleSaveKey} />;
   }
 
   return (
-    <div className="min-h-screen bg-nomad-950 pb-20 relative selection:bg-yellow-500/30 selection:text-yellow-100">
-      <SearchHeader onSearch={handleSearch} loadingState={loadingState} />
-
-      {/* Watchlist Bar */}
-      <WatchlistBar 
-        watchlist={watchlist} 
-        onSelect={handleSearch} 
-        onRemove={removeFromWatchlist} 
+    <div className="flex min-h-screen bg-nomad-950 selection:bg-yellow-500/30 selection:text-yellow-100">
+      {/* Sidebar */}
+      <WatchlistSidebar 
+        watchlist={watchlist}
+        activeTicker={company?.ticker || null}
+        onSelect={handleSearch}
+        onRemove={removeFromWatchlist}
       />
 
-      <main className="max-w-6xl mx-auto px-6 mt-6 space-y-16">
-        
-        {/* Error State */}
-        {loadingState === LoadingState.ERROR && (
-          <div className="bg-red-900/20 border border-red-800/50 text-red-200 p-8 rounded-xl text-center backdrop-blur-sm max-w-2xl mx-auto shadow-2xl">
-            <div className="flex flex-col items-center gap-4">
-               <div className="text-4xl mb-2">⚠️</div>
-               <h3 className="text-xl font-serif text-white">Analysis Failed</h3>
-               <p className="text-lg font-light opacity-90 leading-relaxed">{error}</p>
-               <button 
-                 onClick={clearKey}
-                 className="mt-4 bg-red-900/50 hover:bg-red-800/50 text-white px-6 py-3 rounded-lg border border-red-700 transition-all text-sm font-bold uppercase tracking-wider hover:scale-105"
-               >
-                 Change API Key
-               </button>
-            </div>
-          </div>
-        )}
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto custom-scrollbar">
+        <SearchHeader onSearch={handleSearch} loadingState={loadingState} />
 
-        {/* Empty State */}
-        {loadingState === LoadingState.IDLE && watchlist.length === 0 && (
-          <div className="text-center mt-20 opacity-40">
-            <div className="text-7xl mb-6 grayscale opacity-50">🏰</div>
-            <p className="font-serif text-2xl text-nomad-300 font-light">Enter a ticker to analyze the moat.</p>
-          </div>
-        )}
-
-        {/* Results */}
-        {company && (
-          <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 space-y-12">
-            
-            {/* Header Info */}
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-nomad-800 pb-6">
-              <div>
-                <h1 className="text-4xl md:text-6xl font-serif text-white tracking-tighter">
-                  {company.name} 
-                </h1>
-                <div className="flex items-center gap-3 mt-2">
-                    <span className="text-xl text-nomad-400 font-sans font-medium">{company.ticker}</span>
-                    <span className="px-2 py-1 rounded bg-nomad-800 text-xs text-nomad-300 border border-nomad-700">${company.price.toFixed(2)}</span>
-                    
-                    {/* Add to Watchlist Button */}
-                    <button 
-                      onClick={() => addToWatchlist(company.ticker)}
-                      disabled={watchlist.includes(company.ticker)}
-                      className="ml-2 flex items-center gap-1 px-3 py-1 rounded-full bg-yellow-600/20 hover:bg-yellow-600/30 border border-yellow-600/30 text-yellow-500 text-xs uppercase tracking-wider font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {watchlist.includes(company.ticker) ? 'Saved' : '+ Watchlist'}
-                    </button>
-                </div>
-                <p className="text-nomad-400 mt-4 max-w-3xl text-lg font-light leading-relaxed">{company.description}</p>
-              </div>
-              <div className="text-right hidden md:block bg-nomad-900/50 p-4 rounded-lg border border-nomad-800">
-                <p className="text-nomad-500 text-xs uppercase tracking-widest font-bold">TTM EPS</p>
-                <p className="text-nomad-200 font-mono text-xl">${company.eps}</p>
+        <main className="max-w-6xl mx-auto w-full px-6 mt-6 space-y-16 flex-1">
+          
+          {/* Error State */}
+          {loadingState === LoadingState.ERROR && (
+            <div className="bg-red-900/20 border border-red-800/50 text-red-200 p-8 rounded-xl text-center backdrop-blur-sm max-w-2xl mx-auto shadow-2xl">
+              <div className="flex flex-col items-center gap-4">
+                 <div className="text-4xl mb-2">⚠️</div>
+                 <h3 className="text-xl font-serif text-white">Analysis Failed</h3>
+                 <p className="text-lg font-light opacity-90 leading-relaxed">{error}</p>
+                 <button 
+                   onClick={clearKey}
+                   className="mt-4 bg-red-900/50 hover:bg-red-800/50 text-white px-6 py-3 rounded-lg border border-red-700 transition-all text-sm font-bold uppercase tracking-wider hover:scale-105"
+                 >
+                   Change API Key
+                 </button>
               </div>
             </div>
+          )}
 
-            {/* Tools */}
-            <div className="grid grid-cols-1 gap-16">
-              <section>
-                <ValuationTool company={company} />
-              </section>
+          {/* Empty State */}
+          {loadingState === LoadingState.IDLE && !company && (
+            <div className="text-center mt-32 opacity-40">
+              <div className="text-7xl mb-6 grayscale opacity-50">🏰</div>
+              <p className="font-serif text-2xl text-nomad-300 font-light">Enter a ticker to analyze the moat.</p>
+              <p className="text-nomad-500 text-sm mt-2">Or select a stock from your watchlist.</p>
+            </div>
+          )}
 
-              <section className="animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-100">
-                <DestinationAnalysis company={company} />
-              </section>
-
-              {/* Skeleton Loading for Analysis */}
-              {loadingState === LoadingState.ANALYZING && !analysis && (
-                <div className="space-y-8 animate-pulse">
-                  <div className="h-80 bg-nomad-800 rounded-xl border border-nomad-700/50"></div>
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    <div className="h-96 bg-nomad-800 rounded-xl border border-nomad-700/50"></div>
-                    <div className="h-96 bg-nomad-800 rounded-xl border border-nomad-700/50"></div>
+          {/* Results */}
+          {company && (
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 space-y-12">
+              
+              {/* Header Info */}
+              <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-nomad-800 pb-6">
+                <div>
+                  <h1 className="text-4xl md:text-6xl font-serif text-white tracking-tighter">
+                    {company.name} 
+                  </h1>
+                  <div className="flex items-center gap-3 mt-2">
+                      <span className="text-xl text-nomad-400 font-sans font-medium">{company.ticker}</span>
+                      <span className="px-2 py-1 rounded bg-nomad-800 text-xs text-nomad-300 border border-nomad-700">${company.price.toFixed(2)}</span>
+                      
+                      {/* Add to Watchlist Button */}
+                      <button 
+                        onClick={() => addToWatchlist(company)}
+                        disabled={!!watchlist.find(item => item.ticker === company.ticker)}
+                        className="ml-2 flex items-center gap-1 px-3 py-1 rounded-full bg-yellow-600/20 hover:bg-yellow-600/30 border border-yellow-600/30 text-yellow-500 text-xs uppercase tracking-wider font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {watchlist.find(item => item.ticker === company.ticker) ? 'Saved' : '+ Watchlist'}
+                      </button>
                   </div>
+                  <p className="text-nomad-400 mt-4 max-w-3xl text-lg font-light leading-relaxed">{company.description}</p>
                 </div>
-              )}
+                <div className="text-right hidden md:block bg-nomad-900/50 p-4 rounded-lg border border-nomad-800">
+                  <p className="text-nomad-500 text-xs uppercase tracking-widest font-bold">TTM EPS</p>
+                  <p className="text-nomad-200 font-mono text-xl">${company.eps}</p>
+                </div>
+              </div>
 
-              {analysis && (
-                <>
-                  <section className="animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-200 grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    <div className="lg:col-span-2">
-                      <MoatAnalyzer company={company} analysis={analysis} />
-                    </div>
-                    <div className="lg:col-span-1">
-                      <ManagementAnalysis analysis={analysis} />
-                    </div>
-                  </section>
+              {/* Tools */}
+              <div className="grid grid-cols-1 gap-16">
+                <section>
+                  <ValuationTool company={company} />
+                </section>
 
-                  {/* KPI Section */}
-                  {analysis.kpis && analysis.kpis.length > 0 && (
-                    <section className="animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-250">
-                      <KpiDashboard kpis={analysis.kpis} />
+                <section className="animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-100">
+                  <DestinationAnalysis company={company} suggestions={analysis?.destinationSuggestions} />
+                </section>
+
+                {/* Skeleton Loading for Analysis */}
+                {loadingState === LoadingState.ANALYZING && !analysis && (
+                  <div className="space-y-8 animate-pulse">
+                    <div className="h-80 bg-nomad-800 rounded-xl border border-nomad-700/50"></div>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                      <div className="h-96 bg-nomad-800 rounded-xl border border-nomad-700/50"></div>
+                      <div className="h-96 bg-nomad-800 rounded-xl border border-nomad-700/50"></div>
+                    </div>
+                  </div>
+                )}
+
+                {analysis && (
+                  <>
+                    <section className="animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-200 grid grid-cols-1 lg:grid-cols-3 gap-8">
+                      <div className="lg:col-span-2">
+                        <MoatAnalyzer company={company} analysis={analysis} />
+                      </div>
+                      <div className="lg:col-span-1">
+                        <ManagementAnalysis analysis={analysis} />
+                      </div>
                     </section>
-                  )}
 
-                  {/* Capital Allocation Section */}
-                  {analysis.capitalAllocation && analysis.capitalAllocation.length > 0 && (
-                    <section className="animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-275">
-                      <CapitalAllocation data={analysis.capitalAllocation} />
+                    {/* KPI Section */}
+                    {analysis.kpis && analysis.kpis.length > 0 && (
+                      <section className="animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-250">
+                        <KpiDashboard kpis={analysis.kpis} />
+                      </section>
+                    )}
+
+                    {/* Capital Allocation Section */}
+                    {analysis.capitalAllocation && analysis.capitalAllocation.length > 0 && (
+                      <section className="animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-275">
+                        <CapitalAllocation data={analysis.capitalAllocation} />
+                      </section>
+                    )}
+
+                    {/* Nomad Checklist Section */}
+                    <section className="animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-285">
+                      <NomadChecklist company={company} analysis={analysis} />
                     </section>
-                  )}
 
-                  {/* Nomad Checklist Section */}
-                  <section className="animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-285">
-                    <NomadChecklist company={company} analysis={analysis} />
-                  </section>
-
-                  {/* Investor Presentation & News Section */}
-                  <section className="animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300 grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    <div className="lg:col-span-1">
-                        {analysis.investorPresentation && (
-                        <PresentationCard 
-                            title={analysis.investorPresentation.title} 
-                            url={analysis.investorPresentation.url} 
-                        />
-                        )}
-                    </div>
-                    
-                    <div className="lg:col-span-2">
-                        {analysis.news && analysis.news.length > 0 && (
-                        <NewsFeed news={analysis.news} ticker={company.ticker} />
-                        )}
-                    </div>
-                  </section>
-                </>
-              )}
+                    {/* Investor Presentation & News Section */}
+                    <section className="animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300 grid grid-cols-1 lg:grid-cols-3 gap-8">
+                      <div className="lg:col-span-1">
+                          {analysis.investorPresentation && (
+                          <PresentationCard 
+                              title={analysis.investorPresentation.title} 
+                              url={analysis.investorPresentation.url} 
+                          />
+                          )}
+                      </div>
+                      
+                      <div className="lg:col-span-2">
+                          {analysis.news && analysis.news.length > 0 && (
+                          <NewsFeed news={analysis.news} ticker={company.ticker} />
+                          )}
+                      </div>
+                    </section>
+                  </>
+                )}
+              </div>
             </div>
-          </div>
-        )}
+          )}
+          
+          {company && <NomadWisdom />}
+        </main>
         
-        {company && <NomadWisdom />}
-      </main>
-      
-      <footer className="mt-32 py-12 text-center border-t border-nomad-900 bg-nomad-950">
-        <p className="text-nomad-500 text-sm">Inspired by the letters of the Nomad Investment Partnership (Nick Sleep & Qais Zakaria).</p>
-        <p className="mt-2 text-xs text-nomad-600">Data generated via Gemini 3.0 Pro. Use for educational purposes only.</p>
-        <button onClick={clearKey} className="mt-6 text-xs text-nomad-600 hover:text-yellow-500 transition-colors underline">
-          Change API Key
-        </button>
-      </footer>
+        <footer className="mt-32 py-12 text-center border-t border-nomad-900 bg-nomad-950">
+          <p className="text-nomad-500 text-sm">Inspired by the letters of the Nomad Investment Partnership (Nick Sleep & Qais Zakaria).</p>
+          <p className="mt-2 text-xs text-nomad-600">Data generated via Gemini 3.0 Pro. Use for educational purposes only.</p>
+          <button onClick={clearKey} className="mt-6 text-xs text-nomad-600 hover:text-yellow-500 transition-colors underline">
+            Change API Key
+          </button>
+        </footer>
+      </div>
     </div>
   );
 };

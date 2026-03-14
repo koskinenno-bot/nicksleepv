@@ -1,4 +1,11 @@
 
+export interface WatchlistItem {
+  ticker: string;
+  name: string;
+  price: number;
+  change?: number;
+}
+
 export interface CompanyData {
   ticker: string;
   name: string;
@@ -51,6 +58,13 @@ export interface KpiItem {
   description?: string;
 }
 
+export interface DestinationSuggestion {
+  scenario: string; // e.g., "Conservative", "Base", "Optimistic"
+  growthRate: number;
+  terminalMultiple: number;
+  reasoning: string;
+}
+
 export interface AnalysisResult {
   summary: string;
   robustnessScore: number; // 1-10
@@ -75,6 +89,7 @@ export interface AnalysisResult {
     traits: string[];
   };
   capitalAllocation?: CapitalAllocationData[];
+  destinationSuggestions?: DestinationSuggestion[];
 }
 
 export interface ValuationScenario {

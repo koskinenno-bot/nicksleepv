@@ -188,6 +188,11 @@ export const analyzeMoatRobustness = async (ticker: string, companyName: string,
        a) Reinvestment: Sum of CapEx and R&D (in Billions).
        b) Payout: Sum of Dividends and Share Buybacks (in Billions).
      - This helps see if the company is reinvesting to widen the moat or harvesting profits.
+
+  8. Destination Analysis Suggestions:
+     - Provide 3 valuation scenarios for the next 10 years: "Conservative", "Base", and "Optimistic".
+     - For each, suggest a reasonable 10-year annualized Growth Rate (as a percentage, e.g. 8 for 8%) and a Terminal P/E Multiple.
+     - Provide a brief reasoning for each scenario based on the company's moat and market opportunity.
       
   Format the output strictly as a JSON object inside a code block:
   \`\`\`json
@@ -231,6 +236,26 @@ export const analyzeMoatRobustness = async (ticker: string, companyName: string,
     "capitalAllocation": [
       {"year": "2020", "reinvestment": 15.2, "payout": 5.1},
       {"year": "2021", "reinvestment": 18.5, "payout": 4.8}
+    ],
+    "destinationSuggestions": [
+      {
+        "scenario": "Conservative",
+        "growthRate": 5,
+        "terminalMultiple": 15,
+        "reasoning": "Assumes market saturation and increased competition."
+      },
+      {
+        "scenario": "Base",
+        "growthRate": 10,
+        "terminalMultiple": 20,
+        "reasoning": "Maintains current market share and efficiency gains."
+      },
+      {
+        "scenario": "Optimistic",
+        "growthRate": 15,
+        "terminalMultiple": 25,
+        "reasoning": "Successful expansion into adjacent markets and margin expansion."
+      }
     ]
   }
   \`\`\`
@@ -267,7 +292,8 @@ export const analyzeMoatRobustness = async (ticker: string, companyName: string,
         details: "Analysis failed to parse.",
         traits: []
       },
-      capitalAllocation: []
+      capitalAllocation: [],
+      destinationSuggestions: []
     };
   }
 
@@ -291,6 +317,7 @@ export const analyzeMoatRobustness = async (ticker: string, companyName: string,
     kpis: result.kpis || [],
     managementAnalysis: result.managementAnalysis,
     capitalAllocation: result.capitalAllocation || [],
+    destinationSuggestions: result.destinationSuggestions || [],
     sources: sources as any
   };
 };

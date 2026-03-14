@@ -1,13 +1,13 @@
 
 import React, { useState, useMemo } from 'react';
-import { CompanyData } from '../types';
-import { calculateScenarioCAGR } from '../utils/math';
+import { CompanyData, DestinationSuggestion } from '../types';
 
 interface Props {
   company: CompanyData;
+  suggestions?: DestinationSuggestion[];
 }
 
-const DestinationAnalysis: React.FC<Props> = ({ company }) => {
+const DestinationAnalysis: React.FC<Props> = ({ company, suggestions }) => {
   // Nick Sleep's Destination Analysis focuses on the 10-year end state
   const [revGrowth, setRevGrowth] = useState(0.15); // 15% CAGR
   const [targetMargin, setTargetMargin] = useState(company.financials?.[0]?.netMargin || 15);
@@ -23,6 +23,11 @@ const DestinationAnalysis: React.FC<Props> = ({ company }) => {
   React.useEffect(() => {
     setCurrentRev(initialRev);
   }, [initialRev]);
+
+  const applySuggestion = (s: DestinationSuggestion) => {
+    setRevGrowth(s.growthRate / 100);
+    setTargetMultiple(s.terminalMultiple);
+  };
 
   const currentShares = company.sharesOutstanding || 1;
 
@@ -59,6 +64,33 @@ const DestinationAnalysis: React.FC<Props> = ({ company }) => {
           "The best businesses are those that can grow for a long time. We try to imagine what the company looks like in 10 years and work back." — Nick Sleep
         </p>
       </div>
+
+      {/* AI Suggestions Section */}
+      {suggestions && suggestions.length > 0 && (
+        <div className="px-6 md:px-8 py-4 bg-nomad-900/50 border-b border-nomad-700">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-1.5 h-1.5 rounded-full bg-yellow-500 animate-pulse"></div>
+            <h3 className="text-[10px] uppercase tracking-[0.2em] text-nomad-400 font-bold">AI Recommended Scenarios</h3>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {suggestions.map((s, idx) => (
+              <button
+                key={idx}
+                onClick={() => applySuggestion(s)}
+                className="text-left p-3 rounded-lg border border-nomad-700 hover:border-yellow-500/50 hover:bg-nomad-800 transition-all group"
+              >
+                <div className="flex justify-between items-start mb-1">
+                  <span className="text-xs font-bold text-nomad-200">{s.scenario}</span>
+                  <span className="text-[10px] font-mono text-yellow-500">{s.growthRate}% / {s.terminalMultiple}x</span>
+                </div>
+                <p className="text-[10px] text-nomad-500 leading-tight line-clamp-2 group-hover:text-nomad-400">
+                  {s.reasoning}
+                </p>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="p-6 md:p-8 grid grid-cols-1 lg:grid-cols-12 gap-12">
         {/* Left: Inputs */}
