@@ -89,7 +89,7 @@ const ValuationTool: React.FC<Props> = ({ company }) => {
 
   // Returns Matrix Calculation
   const matrixData = useMemo(() => {
-    const growthRates = [0, 0.05, 0.10, 0.15, 0.20, 0.25];
+    const growthRates = [0, 0.10, 0.20, 0.30, 0.40, 0.50];
     const exitMultiples = [10, 15, 20, 25, 30, 40];
     
     return exitMultiples.map(mult => ({
@@ -101,7 +101,7 @@ const ValuationTool: React.FC<Props> = ({ company }) => {
     })).reverse(); // Higher multiples on top
   }, [company.price, ownersEarnings, holdingPeriod]);
 
-  const growthRatesHeader = [0, 0.05, 0.10, 0.15, 0.20, 0.25];
+  const growthRatesHeader = [0, 0.10, 0.20, 0.30, 0.40, 0.50];
 
   // Nick Sleep logic text
   const sleepVerdict = useMemo(() => {
@@ -379,7 +379,7 @@ const ValuationTool: React.FC<Props> = ({ company }) => {
                </p>
                <div className="p-3 bg-nomad-900/50 rounded border border-nomad-700/30">
                  <p className="text-xs text-nomad-400">
-                   <span className="text-yellow-500 font-bold">Example:</span> If {company.ticker} grows Owner's Earnings at <span className="text-white font-medium">15%</span> per year and you sell at a <span className="text-white font-medium">25x</span> multiple in {holdingPeriod} years, you would earn <span className={`font-bold ${calculateScenarioCAGR(company.price, ownersEarnings, 0.15, 25, holdingPeriod) >= 0.1 ? 'text-green-400' : 'text-red-400'}`}>{(calculateScenarioCAGR(company.price, ownersEarnings, 0.15, 25, holdingPeriod)*100).toFixed(1)}%</span> every year.
+                   <span className="text-yellow-500 font-bold">Example:</span> If {company.ticker} grows Owner's Earnings at <span className="text-white font-medium">20%</span> per year and you sell at a <span className="text-white font-medium">25x</span> multiple in {holdingPeriod} years, you would earn <span className={`font-bold ${calculateScenarioCAGR(company.price, ownersEarnings, 0.20, 25, holdingPeriod) >= 0.1 ? 'text-green-400' : 'text-red-400'}`}>{(calculateScenarioCAGR(company.price, ownersEarnings, 0.20, 25, holdingPeriod)*100).toFixed(1)}%</span> every year.
                  </p>
                </div>
             </div>
