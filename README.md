@@ -12,21 +12,34 @@ Move beyond GAAP net income. This tool calculates "Owner's Earnings" as defined 
 *   **AI-Estimated Maintenance CapEx**: Uses Gemini 3.0 to estimate the portion of CapEx required to maintain current operations vs. growth.
 *   **SBC Adjustment**: Treats Stock-Based Compensation as a real economic expense to reflect true shareholder dilution.
 
+
+<img width="1371" height="1266" alt="image" src="https://github.com/user-attachments/assets/a9c4b64f-baab-41a5-8513-0bad242040a4" />
+
+
 ### 2. AI-Powered Moat Analysis
 Leverages **Google Gemini 3.0** to perform high-level qualitative analysis:
 *   **Scale Economics Shared**: Specifically looks for the "Nomad" holy grail—companies that pass savings back to customers to widen their moat.
 *   **Management Quality**: Analyzes capital allocation history and long-term orientation.
 *   **Moat Robustness Score**: A data-driven qualitative score (1-10) based on competitive positioning.
 
+<img width="1149" height="1179" alt="image" src="https://github.com/user-attachments/assets/0c0a2a32-850b-4c25-9e29-5ffb5a02d819" />
+
+
 ### 3. Valuation & Returns Matrix
 *   **Reverse DCF**: Instead of guessing growth, this tool calculates the "Implied Growth Rate" the market is currently pricing in.
 *   **Returns Matrix (CAGR)**: A 6x6 sensitivity matrix showing potential annualized returns based on varying exit multiples and earnings growth scenarios (up to 50%).
 *   **Price Sensitivity Curve**: Visualizes intrinsic value across a spectrum of growth expectations.
 
+<img width="1203" height="998" alt="image" src="https://github.com/user-attachments/assets/f8ffc8bd-55f5-4ac9-b90a-698b5a6c434b" />
+
+
 ### 4. Capital Allocation Dashboard
 Visualizes the tension between **Moat Widening** (Reinvestment in R&D/CapEx) and **Harvesting** (Dividends/Buybacks).
 *   **Yield Analysis**: Real-time calculation of Buyback and Dividend yields relative to historical market caps.
 *   **Reinvestment Rates**: Tracks R&D and CapEx as a percentage of revenue over time.
+
+<img width="1163" height="855" alt="image" src="https://github.com/user-attachments/assets/7d0291d0-ad47-4ea6-8b0c-b1211540ca91" />
+
 
 ---
 
