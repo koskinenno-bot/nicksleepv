@@ -88,34 +88,34 @@ const MoatAnalyzer: React.FC<Props> = ({ company, analysis }) => {
             <span className="text-xs text-nomad-500 uppercase tracking-widest font-semibold">5 Year Trend</span>
          </div>
 
-        <div className="flex flex-col md:flex-row gap-8">
-          <div className="flex-1 h-80">
+        <div className="flex flex-col lg:flex-row gap-6 md:gap-8">
+          <div className="flex-1 h-64 md:h-80">
              <ResponsiveContainer width="100%" height="100%">
               <ComposedChart data={company.financials}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} opacity={0.5} />
-                <XAxis dataKey="year" stroke="#64748b" tick={{fontSize: 12}} />
-                <YAxis yAxisId="left" stroke="#94a3b8" tick={{fontSize: 12}} label={{ value: 'Rev ($B)', angle: -90, position: 'insideLeft', fill: '#94a3b8', fontSize: 10 }} />
-                <YAxis yAxisId="right" orientation="right" stroke="#eab308" tick={{fontSize: 12}} label={{ value: 'Margin %', angle: 90, position: 'insideRight', fill: '#eab308', fontSize: 10 }} />
+                <XAxis dataKey="year" stroke="#64748b" tick={{fontSize: 10}} />
+                <YAxis yAxisId="left" stroke="#94a3b8" tick={{fontSize: 10}} label={{ value: 'Rev ($B)', angle: -90, position: 'insideLeft', fill: '#94a3b8', fontSize: 9 }} />
+                <YAxis yAxisId="right" orientation="right" stroke="#eab308" tick={{fontSize: 10}} label={{ value: 'Margin %', angle: 90, position: 'insideRight', fill: '#eab308', fontSize: 9 }} />
                 <Tooltip 
-                  contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #475569', borderRadius: '8px', color: '#f1f5f9' }}
+                  contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #475569', borderRadius: '8px', color: '#f1f5f9', fontSize: '11px' }}
                 />
-                <Legend wrapperStyle={{ paddingTop: '15px', fontSize: '12px' }} />
-                <Bar yAxisId="left" dataKey="revenue" name="Revenue ($B)" fill="#475569" barSize={40} radius={[4, 4, 0, 0]} fillOpacity={0.8} />
-                <Line yAxisId="right" type="monotone" dataKey="netMargin" name="Net Margin %" stroke="#eab308" strokeWidth={3} dot={{r: 4, fill: '#0f172a', strokeWidth: 2, stroke: '#eab308'}} />
+                <Legend wrapperStyle={{ paddingTop: '10px', fontSize: '11px' }} />
+                <Bar yAxisId="left" dataKey="revenue" name="Revenue ($B)" fill="#475569" barSize={30} radius={[4, 4, 0, 0]} fillOpacity={0.8} />
+                <Line yAxisId="right" type="monotone" dataKey="netMargin" name="Net Margin %" stroke="#eab308" strokeWidth={2} dot={{r: 3, fill: '#0f172a', strokeWidth: 2, stroke: '#eab308'}} />
               </ComposedChart>
             </ResponsiveContainer>
           </div>
           
-          <div className="w-full md:w-1/3 space-y-4 flex flex-col justify-center">
-            <div className="bg-nomad-900/50 p-5 rounded-lg border border-nomad-700/50 shadow-inner">
+          <div className="w-full lg:w-1/3 space-y-4 flex flex-col justify-center">
+            <div className="bg-nomad-900/50 p-4 md:p-5 rounded-lg border border-nomad-700/50 shadow-inner">
               <div className="flex items-center gap-2 mb-2">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-yellow-500">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 md:w-5 md:h-5 text-yellow-500">
                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
-                <h4 className="text-nomad-200 text-sm font-bold">Visual Pattern</h4>
+                <h4 className="text-nomad-200 text-xs md:text-sm font-bold uppercase tracking-wider">Visual Pattern</h4>
               </div>
-              <p className="text-nomad-400 text-sm leading-relaxed">
+              <p className="text-nomad-400 text-xs md:text-sm leading-relaxed">
                 {getVisualPatternDescription(analysis.moatSource || "Scale Economics Shared")}
               </p>
             </div>
@@ -147,18 +147,18 @@ const MoatAnalyzer: React.FC<Props> = ({ company, analysis }) => {
           </div>
         </div>
 
-        {/* Robustness Ratio (Nick Sleep) */}
+        {/* Competitive Advantage Analysis */}
         <div className="bg-nomad-800 rounded-xl p-6 md:p-8 border border-nomad-700 shadow-2xl flex flex-col">
           <div className="flex items-center justify-between mb-6 border-b border-nomad-700 pb-4">
-             <h2 className="text-2xl font-serif text-nomad-50">Robustness Ratio</h2>
+             <h2 className="text-2xl font-serif text-nomad-50">Competitive Advantage</h2>
              <div className="flex items-center gap-2">
-               <span className="text-nomad-400 text-xs uppercase font-semibold">Score</span>
+               <span className="text-nomad-400 text-xs uppercase font-semibold">Moat Score</span>
                <div className={`text-xl font-bold px-3 py-1 rounded border flex items-center gap-1 ${
-                 analysis.robustnessScore >= 8 ? 'bg-green-900/30 text-green-400 border-green-800/50' :
-                 analysis.robustnessScore >= 5 ? 'bg-yellow-900/30 text-yellow-400 border-yellow-800/50' :
+                 analysis.moatScore >= 8 ? 'bg-green-900/30 text-green-400 border-green-800/50' :
+                 analysis.moatScore >= 5 ? 'bg-yellow-900/30 text-yellow-400 border-yellow-800/50' :
                  'bg-red-900/30 text-red-400 border-red-800/50'
                }`}>
-                 <span>{analysis.robustnessScore}</span>
+                 <span>{analysis.moatScore}</span>
                  <span className="text-xs opacity-70 font-normal">/10</span>
                </div>
              </div>
@@ -166,7 +166,7 @@ const MoatAnalyzer: React.FC<Props> = ({ company, analysis }) => {
 
           <div className="prose prose-invert max-w-none flex-1 flex flex-col">
              <p className="text-yellow-100/80 leading-relaxed text-sm mb-6 italic bg-yellow-900/10 p-4 rounded border border-yellow-900/20">
-              "{analysis.scaleEconomicsShared}"
+              "{analysis.competitiveAdvantageAnalysis}"
             </p>
             <div className="mt-auto">
               <h3 className="text-xs font-bold text-nomad-500 uppercase mb-2 tracking-wider">Executive Summary</h3>

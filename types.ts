@@ -75,8 +75,8 @@ export interface DestinationSuggestion {
 
 export interface AnalysisResult {
   summary: string;
-  robustnessScore: number; // 1-10
-  scaleEconomicsShared: string;
+  moatScore: number; // 1-10
+  competitiveAdvantageAnalysis: string;
   moatVerdict: string; // Wide, Narrow, None
   moatSource: string;
   moatDescription: string;

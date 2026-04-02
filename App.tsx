@@ -24,6 +24,7 @@ const App: React.FC = () => {
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [watchlist, setWatchlist] = useState<WatchlistItem[]>([]);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Check for key and watchlist on mount
   useEffect(() => {
@@ -82,6 +83,7 @@ const App: React.FC = () => {
   const handleSearch = async (ticker: string) => {
     if (!apiKey) return;
     
+    setIsMobileMenuOpen(false); // Close menu on search
     setLoadingState(LoadingState.SEARCHING);
     setError(null);
     setCompany(null);
@@ -117,20 +119,48 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="flex min-h-screen bg-nomad-950 selection:bg-yellow-500/30 selection:text-yellow-100">
+    <div className="flex min-h-screen bg-nomad-950 selection:bg-yellow-500/30 selection:text-yellow-100 relative overflow-x-hidden">
+      {/* Mobile Menu Overlay */}
+      {isMobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <WatchlistSidebar 
-        watchlist={watchlist}
-        activeTicker={company?.ticker || null}
-        onSelect={handleSearch}
-        onRemove={removeFromWatchlist}
-      />
+      <div className={`fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <WatchlistSidebar 
+          watchlist={watchlist}
+          activeTicker={company?.ticker || null}
+          onSelect={handleSearch}
+          onRemove={removeFromWatchlist}
+          onClose={() => setIsMobileMenuOpen(false)}
+        />
+      </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto custom-scrollbar">
+      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto custom-scrollbar relative">
+        {/* Mobile Header Toggle */}
+        <div className="lg:hidden flex items-center justify-between p-4 border-b border-nomad-900 bg-nomad-950 sticky top-0 z-30">
+          <button 
+            onClick={() => setIsMobileMenuOpen(true)}
+            className="p-2 text-nomad-400 hover:text-white transition-colors"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+            </svg>
+          </button>
+          <div className="flex items-center gap-2">
+            <div className="w-1.5 h-5 bg-yellow-500 rounded-full"></div>
+            <span className="font-serif text-sm text-white tracking-widest uppercase">Nomad Terminal</span>
+          </div>
+          <div className="w-10"></div> {/* Spacer */}
+        </div>
+
         <SearchHeader onSearch={handleSearch} loadingState={loadingState} compact={!!company} />
 
-        <main className="max-w-6xl mx-auto w-full px-6 mt-6 space-y-16 flex-1">
+        <main className="max-w-6xl mx-auto w-full px-4 md:px-6 mt-6 space-y-12 md:space-y-16 flex-1 pb-20">
           
           {/* Error State */}
           {loadingState === LoadingState.ERROR && (
@@ -164,28 +194,28 @@ const App: React.FC = () => {
               
               {/* Header Info */}
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-nomad-800 pb-6">
-                <div>
-                  <h1 className="text-4xl md:text-6xl font-serif text-white tracking-tighter">
+                <div className="flex-1 min-w-0">
+                  <h1 className="text-3xl md:text-6xl font-serif text-white tracking-tighter truncate">
                     {company.name} 
                   </h1>
-                  <div className="flex items-center gap-3 mt-2">
-                      <span className="text-xl text-nomad-400 font-sans font-medium">{company.ticker}</span>
-                      <span className="px-2 py-1 rounded bg-nomad-800 text-xs text-nomad-300 border border-nomad-700">${company.price.toFixed(2)}</span>
+                  <div className="flex flex-wrap items-center gap-2 md:gap-3 mt-2">
+                      <span className="text-lg md:text-xl text-nomad-400 font-sans font-medium">{company.ticker}</span>
+                      <span className="px-2 py-1 rounded bg-nomad-800 text-[10px] md:text-xs text-nomad-300 border border-nomad-700">${company.price.toFixed(2)}</span>
                       
                       {/* Add to Watchlist Button */}
                       <button 
                         onClick={() => addToWatchlist(company)}
                         disabled={!!watchlist.find(item => item.ticker === company.ticker)}
-                        className="ml-2 flex items-center gap-1 px-3 py-1 rounded-full bg-yellow-600/20 hover:bg-yellow-600/30 border border-yellow-600/30 text-yellow-500 text-xs uppercase tracking-wider font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="flex items-center gap-1 px-2 md:px-3 py-1 rounded-full bg-yellow-600/20 hover:bg-yellow-600/30 border border-yellow-600/30 text-yellow-500 text-[10px] md:text-xs uppercase tracking-wider font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {watchlist.find(item => item.ticker === company.ticker) ? 'Saved' : '+ Watchlist'}
                       </button>
                   </div>
-                  <p className="text-nomad-400 mt-4 max-w-3xl text-lg font-light leading-relaxed">{company.description}</p>
+                  <p className="text-nomad-400 mt-4 max-w-3xl text-sm md:text-lg font-light leading-relaxed">{company.description}</p>
                 </div>
-                <div className="text-right hidden md:block bg-nomad-900/50 p-4 rounded-lg border border-nomad-800">
-                  <p className="text-nomad-500 text-xs uppercase tracking-widest font-bold">TTM EPS</p>
-                  <p className="text-nomad-200 font-mono text-xl">${company.eps}</p>
+                <div className="flex justify-between items-center md:block bg-nomad-900/50 p-3 md:p-4 rounded-lg border border-nomad-800 md:text-right">
+                  <p className="text-nomad-50 text-[10px] uppercase tracking-widest font-bold md:text-nomad-500">TTM EPS</p>
+                  <p className="text-nomad-200 font-mono text-lg md:text-xl">${company.eps}</p>
                 </div>
               </div>
 

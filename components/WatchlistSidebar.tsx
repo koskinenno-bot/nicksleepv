@@ -8,19 +8,30 @@ interface Props {
   activeTicker: string | null;
   onSelect: (ticker: string) => void;
   onRemove: (ticker: string) => void;
+  onClose?: () => void;
 }
 
-const WatchlistSidebar: React.FC<Props> = ({ watchlist, activeTicker, onSelect, onRemove }) => {
+const WatchlistSidebar: React.FC<Props> = ({ watchlist, activeTicker, onSelect, onRemove, onClose }) => {
   return (
-    <div className="w-80 h-screen sticky top-0 bg-nomad-950 border-r border-nomad-900 flex flex-col overflow-hidden">
+    <div className="w-[280px] sm:w-80 h-screen bg-nomad-950 border-r border-nomad-900 flex flex-col overflow-hidden shadow-2xl lg:shadow-none">
       <div className="p-6 border-b border-nomad-900 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="w-2 h-6 bg-yellow-500 rounded-full"></div>
           <h2 className="text-lg font-serif text-white tracking-tight">Watchlist</h2>
         </div>
-        <span className="text-[10px] bg-nomad-800 text-nomad-400 px-2 py-1 rounded-full font-bold uppercase tracking-widest">
-          {watchlist.length} Stocks
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] bg-nomad-800 text-nomad-400 px-2 py-1 rounded-full font-bold uppercase tracking-widest">
+            {watchlist.length}
+          </span>
+          {onClose && (
+            <button 
+              onClick={onClose}
+              className="lg:hidden p-1 text-nomad-500 hover:text-white transition-colors"
+            >
+              <X size={18} />
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto custom-scrollbar">

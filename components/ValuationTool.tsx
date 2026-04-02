@@ -176,27 +176,27 @@ const ValuationTool: React.FC<Props> = ({ company }) => {
         )}
 
         {/* Top Controls */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
            
            {/* Owner's Earnings Slider */}
-           <div className="bg-nomad-800 p-5 rounded-lg border border-nomad-700 flex flex-col shadow-md">
+           <div className="bg-nomad-800 p-4 md:p-5 rounded-lg border border-nomad-700 flex flex-col shadow-md">
              <div className="flex justify-between items-center mb-3">
-                <label className="block text-nomad-400 text-xs uppercase tracking-wider font-semibold">Owner's Earnings</label>
+                <label className="block text-nomad-400 text-[10px] md:text-xs uppercase tracking-wider font-semibold">Owner's Earnings</label>
                 <button 
                   onClick={() => setShowCalculator(!showCalculator)}
-                  className="text-[10px] text-yellow-500 hover:text-yellow-300 bg-yellow-900/20 px-2 py-1 rounded border border-yellow-700/30 transition-colors uppercase tracking-wide font-medium"
+                  className="text-[9px] md:text-[10px] text-yellow-500 hover:text-yellow-300 bg-yellow-900/20 px-2 py-1 rounded border border-yellow-700/30 transition-colors uppercase tracking-wide font-medium"
                 >
                   {showCalculator ? 'Hide Calc' : 'Buffett Calc'}
                 </button>
              </div>
              <div className="flex flex-col gap-2 flex-1 justify-center">
                <div className="relative w-full group">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-yellow-600 font-mono text-lg transition-colors group-focus-within:text-yellow-500">$</span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-yellow-600 font-mono text-base md:text-lg transition-colors group-focus-within:text-yellow-500">$</span>
                   <input
                     type="number"
                     value={ownersEarnings}
                     onChange={e => setOwnersEarnings(parseFloat(e.target.value) || 0)}
-                    className="w-full bg-nomad-900 border border-nomad-600 rounded-lg pl-8 pr-3 py-2 text-right text-yellow-400 font-mono text-xl focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500/50 transition-all"
+                    className="w-full bg-nomad-900 border border-nomad-600 rounded-lg pl-8 pr-3 py-2 text-right text-yellow-400 font-mono text-lg md:text-xl focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500/50 transition-all"
                     step="0.01"
                   />
                </div>
@@ -209,17 +209,17 @@ const ValuationTool: React.FC<Props> = ({ company }) => {
            </div>
 
            {/* Discount Rate */}
-           <div className="bg-nomad-800 p-5 rounded-lg border border-nomad-700 flex flex-col shadow-md">
-             <label className="block text-nomad-400 text-xs uppercase tracking-wider font-semibold mb-3">Discount Rate</label>
+           <div className="bg-nomad-800 p-4 md:p-5 rounded-lg border border-nomad-700 flex flex-col shadow-md">
+             <label className="block text-nomad-400 text-[10px] md:text-xs uppercase tracking-wider font-semibold mb-3">Discount Rate</label>
              <div className="flex flex-col gap-2 flex-1 justify-center">
                <div className="relative w-full group">
                   <input
                     type="number"
                     value={Math.round(discountRate * 100)}
                     onChange={e => setDiscountRate((parseFloat(e.target.value) || 0) / 100)}
-                    className="w-full bg-nomad-900 border border-nomad-600 rounded-lg pl-3 pr-8 py-2 text-right text-nomad-200 font-mono text-xl focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500/50 transition-all"
+                    className="w-full bg-nomad-900 border border-nomad-600 rounded-lg pl-3 pr-8 py-2 text-right text-nomad-200 font-mono text-lg md:text-xl focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500/50 transition-all"
                   />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-nomad-500 font-mono text-lg group-focus-within:text-yellow-500">%</span>
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-nomad-500 font-mono text-base md:text-lg group-focus-within:text-yellow-500">%</span>
                </div>
                <input 
                  type="range" min="0.06" max="0.20" step="0.01" 
@@ -230,17 +230,17 @@ const ValuationTool: React.FC<Props> = ({ company }) => {
            </div>
            
            {/* Holding Period */}
-           <div className="bg-nomad-800 p-5 rounded-lg border border-nomad-700 flex flex-col shadow-md">
-             <label className="block text-nomad-400 text-xs uppercase tracking-wider font-semibold mb-3">Holding Period</label>
+           <div className="bg-nomad-800 p-4 md:p-5 rounded-lg border border-nomad-700 flex flex-col shadow-md">
+             <label className="block text-nomad-400 text-[10px] md:text-xs uppercase tracking-wider font-semibold mb-3">Holding Period</label>
              <div className="flex flex-col gap-2 flex-1 justify-center">
                <div className="relative w-full group">
                   <input
                     type="number"
                     value={holdingPeriod}
                     onChange={e => setHoldingPeriod(parseFloat(e.target.value) || 0)}
-                    className="w-full bg-nomad-900 border border-nomad-600 rounded-lg pl-3 pr-10 py-2 text-right text-nomad-200 font-mono text-xl focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500/50 transition-all"
+                    className="w-full bg-nomad-900 border border-nomad-600 rounded-lg pl-3 pr-10 py-2 text-right text-nomad-200 font-mono text-lg md:text-xl focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500/50 transition-all"
                   />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-nomad-500 font-mono text-lg group-focus-within:text-yellow-500">yr</span>
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-nomad-500 font-mono text-base md:text-lg group-focus-within:text-yellow-500">yr</span>
                </div>
                <input 
                  type="range" min="1" max="30" step="1" 
@@ -251,40 +251,40 @@ const ValuationTool: React.FC<Props> = ({ company }) => {
            </div>
 
            {/* Multiple Display */}
-           <div className="bg-nomad-800 p-5 rounded-lg border border-nomad-700 flex flex-col justify-center shadow-md relative overflow-hidden">
+           <div className="bg-nomad-800 p-4 md:p-5 rounded-lg border border-nomad-700 flex flex-col justify-center shadow-md relative overflow-hidden">
              <div className="absolute top-0 right-0 p-8 bg-white/5 rounded-full blur-xl -mr-4 -mt-4"></div>
              <div className="flex justify-between items-baseline mb-2 relative z-10">
-               <div className="text-nomad-400 text-xs uppercase tracking-wider font-semibold">Current P/OE</div>
+               <div className="text-nomad-400 text-[10px] md:text-xs uppercase tracking-wider font-semibold">Current P/OE</div>
              </div>
-             <div className="text-3xl text-white font-mono text-right relative z-10 tracking-tight">
+             <div className="text-2xl md:text-3xl text-white font-mono text-right relative z-10 tracking-tight">
                {isFinite(currentMultiple) ? currentMultiple.toFixed(1) : 'N/A'}x
              </div>
-             <div className="text-[10px] text-nomad-500 text-right relative z-10 mt-1">Price / Owner's Earnings</div>
+             <div className="text-[9px] md:text-[10px] text-nomad-500 text-right relative z-10 mt-1">Price / Owner's Earnings</div>
            </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12">
           
           {/* Left: Reverse DCF */}
           <div className="space-y-6">
              <div className="flex items-baseline justify-between border-b border-nomad-700 pb-2">
-                <h3 className="text-lg font-medium text-nomad-200">Market Expectations</h3>
-                <span className="text-xs text-nomad-500 uppercase tracking-wide">Reverse DCF Model</span>
+                <h3 className="text-base md:text-lg font-medium text-nomad-200">Market Expectations</h3>
+                <span className="text-[10px] md:text-xs text-nomad-500 uppercase tracking-wide">Reverse DCF Model</span>
              </div>
              
-             <div className="bg-nomad-800/50 rounded-lg p-6 border border-nomad-700 shadow-inner">
+             <div className="bg-nomad-800/50 rounded-lg p-5 md:p-6 border border-nomad-700 shadow-inner">
                <div className="flex justify-between items-end mb-4">
-                 <span className="text-nomad-400 text-sm font-medium">Implied Growth Rate</span>
-                 <span className="text-4xl text-yellow-500 font-serif tracking-tight">
+                 <span className="text-nomad-400 text-xs md:text-sm font-medium">Implied Growth Rate</span>
+                 <span className="text-3xl md:text-4xl text-yellow-500 font-serif tracking-tight">
                     {isNaN(impliedGrowth) ? "N/A" : `${(impliedGrowth * 100).toFixed(1)}%`}
                  </span>
                </div>
-               <p className="text-nomad-300 italic text-sm border-l-2 border-yellow-600 pl-4 py-1">
+               <p className="text-nomad-300 italic text-xs md:text-sm border-l-2 border-yellow-600 pl-4 py-1">
                  {sleepVerdict}
                </p>
              </div>
 
-             <div className="h-64 w-full">
+             <div className="h-48 md:h-64 w-full">
                <ResponsiveContainer width="100%" height="100%">
                  <LineChart data={chartData}>
                    <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} opacity={0.5} />
@@ -300,7 +300,7 @@ const ValuationTool: React.FC<Props> = ({ company }) => {
                    <Line type="monotone" dataKey="price" stroke="#94a3b8" strokeWidth={3} dot={false} activeDot={{ r: 6, fill: '#eab308', stroke: '#fff' }} />
                  </LineChart>
                </ResponsiveContainer>
-               <p className="text-center text-[10px] text-nomad-500 uppercase tracking-widest mt-2">Price Sensitivity Curve</p>
+               <p className="text-center text-[9px] md:text-[10px] text-nomad-500 uppercase tracking-widest mt-2">Price Sensitivity Curve</p>
              </div>
           </div>
 
@@ -308,42 +308,42 @@ const ValuationTool: React.FC<Props> = ({ company }) => {
           <div className="space-y-6">
             <div className="flex flex-col gap-1 border-b border-nomad-700 pb-2">
               <div className="flex justify-between items-baseline">
-                 <h3 className="text-lg font-medium text-nomad-200">Returns Matrix</h3>
-                 <span className="text-xs text-nomad-500 uppercase tracking-wide">{holdingPeriod}YR Annualized Return (CAGR)</span>
+                 <h3 className="text-base md:text-lg font-medium text-nomad-200">Returns Matrix</h3>
+                 <span className="text-[10px] md:text-xs text-nomad-500 uppercase tracking-wide">{holdingPeriod}YR Annualized Return (CAGR)</span>
               </div>
             </div>
 
             {/* Legend */}
-            <div className="flex flex-wrap gap-4 text-[10px] uppercase tracking-widest font-bold">
+            <div className="flex flex-wrap gap-3 md:gap-4 text-[9px] md:text-[10px] uppercase tracking-widest font-bold">
               <div className="flex items-center gap-1.5">
-                <div className="w-3 h-3 rounded bg-green-900/40 border border-green-800/30"></div>
+                <div className="w-2.5 h-2.5 md:w-3 md:h-3 rounded bg-green-900/40 border border-green-800/30"></div>
                 <span className="text-nomad-400">Market Beating (20%+)</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <div className="w-3 h-3 rounded bg-yellow-900/20 border border-yellow-800/30"></div>
+                <div className="w-2.5 h-2.5 md:w-3 md:h-3 rounded bg-yellow-900/20 border border-yellow-800/30"></div>
                 <span className="text-nomad-400">Solid (10-20%)</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <div className="w-3 h-3 rounded bg-nomad-800 border border-nomad-700"></div>
+                <div className="w-2.5 h-2.5 md:w-3 md:h-3 rounded bg-nomad-800 border border-nomad-700"></div>
                 <span className="text-nomad-400">Modest (0-10%)</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <div className="w-3 h-3 rounded bg-red-900/20 border border-red-800/30"></div>
+                <div className="w-2.5 h-2.5 md:w-3 md:h-3 rounded bg-red-900/20 border border-red-800/30"></div>
                 <span className="text-nomad-400">Negative</span>
               </div>
             </div>
 
-            <div className="overflow-hidden rounded-lg border border-nomad-700 shadow-lg">
-              <table className="w-full text-center text-sm border-collapse">
+            <div className="overflow-x-auto rounded-lg border border-nomad-700 shadow-lg">
+              <table className="w-full text-center text-sm border-collapse min-w-[500px]">
                 <thead className="bg-nomad-800">
                   <tr>
-                    <th className="p-3 text-nomad-500 font-normal text-[10px] uppercase tracking-wider border-b border-nomad-700 border-r">
+                    <th className="p-3 text-nomad-500 font-normal text-[9px] md:text-[10px] uppercase tracking-wider border-b border-nomad-700 border-r sticky left-0 bg-nomad-800 z-10">
                       If Exit P/OE is...
                     </th>
                     {growthRatesHeader.map(g => (
                       <th key={g} className="p-2 text-nomad-300 font-medium border-b border-nomad-700 text-xs">
                         {(g * 100).toFixed(0)}%
-                        <span className="block text-[9px] text-nomad-500 font-normal uppercase">Annual Growth</span>
+                        <span className="block text-[8px] md:text-[9px] text-nomad-500 font-normal uppercase">Annual Growth</span>
                       </th>
                     ))}
                   </tr>
@@ -351,12 +351,12 @@ const ValuationTool: React.FC<Props> = ({ company }) => {
                 <tbody className="bg-nomad-900/30">
                   {matrixData.map((row, i) => (
                     <tr key={row.multiple}>
-                      <td className="p-2 text-nomad-400 font-mono text-xs border-r border-nomad-700/50 bg-nomad-800/50">
+                      <td className="p-2 text-nomad-400 font-mono text-xs border-r border-nomad-700/50 bg-nomad-800/50 sticky left-0 z-10">
                         {row.multiple}x
                       </td>
                       {row.returns.map((cell, j) => (
                         <td key={j} className="p-1 border-b border-nomad-700/30">
-                          <div className={`w-full py-2 rounded text-xs transition-all hover:scale-105 cursor-default ${getCellColor(cell.cagr)}`}>
+                          <div className={`w-full py-2 rounded text-[10px] md:text-xs transition-all hover:scale-105 cursor-default ${getCellColor(cell.cagr)}`}>
                              {(cell.cagr * 100).toFixed(1)}%
                           </div>
                         </td>

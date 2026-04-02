@@ -152,17 +152,17 @@ export const analyzeMoatRobustness = async (ticker: string, companyName: string,
   const ai = getClient(apiKey);
   
   const prompt = `
-  Analyze ${companyName} (${ticker}) using two frameworks and find recent data:
+  Analyze ${companyName} (${ticker}) to identify its primary competitive advantage (moat):
   
-  1. Nick Sleep's "Scale Economics Shared" (Robustness Ratio):
-     - Does the company pass on scale benefits to customers (lower prices) or keep them as margins?
-     - Robustness Score 1-10 (10 = Costco/Amazon).
-
-  2. General Moat Analysis (Morningstar style):
+  1. Primary Competitive Advantage (Moat Identification):
+     - Identify the core type of competitive advantage: "Scale Economics Shared", "Network Effects", "Switching Costs", "Intangible Assets", "Cost Advantage", or "Efficient Scale".
+     - Provide a deep analysis of how this specific advantage works for this company.
+     - Moat Score 1-10 (10 = Unassailable, 1 = Very Weak).
+  
+  2. Moat Verdict (Morningstar style):
      - Verdict: "Wide", "Narrow", or "None".
-     - Primary Source: "Scale Economics Shared", "Network Effects", "Switching Costs", "Intangible Assets", "Cost Advantage", or "Efficient Scale".
-     - Detailed explanation of the moat.
-
+     - Detailed explanation of why the moat is wide/narrow/none.
+  
   3. Recent News:
      - Find 3 recent news headlines/events relevant to the company stock or business from the last 30 days.
      - Categorize each as "Signal" (long-term business impact) or "Noise" (short-term volatility, macro, or sentiment).
@@ -173,19 +173,19 @@ export const analyzeMoatRobustness = async (ticker: string, companyName: string,
      - PREFERRED: A direct link to the specific presentation (PDF or webpage).
      - ACCEPTABLE FALLBACK: The main Investor Relations homepage if a specific link is hard to find or might expire.
      - Return the title and the URL.
-
+  
   5. Key Performance Indicators (KPIs):
      - Identify 3-4 critical quantitative KPIs that drive this specific business (e.g. for Netflix: "Global Paid Subs"; for Retail: "Same Store Sales" or "Store Count"; for Tech: "Daily Active Users" or "Cloud Revenue").
      - Provide 3-5 years of historical data for each KPI.
      - Ensure the 'value' is a number (no symbols).
-
+  
   6. Management Integrity & Long-termism (Nick Sleep style):
      - Analyze the CEO and management team's reputation and communication.
      - Look for "Sleep-like" traits: Long-term focus (decades), customer-centricity, cost-consciousness, and honesty/transparency.
      - Verdict: "Fanatical", "Long-term", "Standard", or "Short-term".
      - Score 1-10 (10 = Jeff Bezos/Warren Buffett style).
      - Provide 3 specific traits and a detailed analysis.
-
+  
   7. Capital Allocation (Moat Widening):
      - Find historical data for the last 3-5 years for:
        a) CapEx (in Billions)
@@ -195,18 +195,18 @@ export const analyzeMoatRobustness = async (ticker: string, companyName: string,
        e) Total Revenue (in Billions)
        f) Average Market Cap for that year (in Billions)
      - This helps see if the company is reinvesting to widen the moat or harvesting profits.
-
+  
   8. Destination Analysis Suggestions:
      - Provide 3 valuation scenarios for the next 10 years: "Conservative", "Base", and "Optimistic".
      - For each, suggest a reasonable 10-year annualized Growth Rate (as a percentage, e.g. 8 for 8%) and a Terminal P/E Multiple.
      - Provide a brief reasoning for each scenario based on the company's moat and market opportunity.
-      
+       
   Format the output strictly as a JSON object inside a code block:
   \`\`\`json
   {
     "summary": "Brief executive summary of the business quality.",
-    "robustnessScore": 8,
-    "scaleEconomicsShared": "Specific analysis of scale economics shared...",
+    "moatScore": 8,
+    "competitiveAdvantageAnalysis": "Specific analysis of the identified competitive advantage...",
     "moatVerdict": "Wide",
     "moatSource": "Cost Advantage",
     "moatDescription": "Explanation of why the moat is wide/narrow...",
@@ -295,8 +295,8 @@ export const analyzeMoatRobustness = async (ticker: string, companyName: string,
   if (!result.summary) {
     result = {
       summary: text.slice(0, 200) + "...",
-      robustnessScore: 5,
-      scaleEconomicsShared: "Could not structure analysis.",
+      moatScore: 5,
+      competitiveAdvantageAnalysis: "Could not structure analysis.",
       moatVerdict: "Unknown",
       moatSource: "Unknown",
       moatDescription: "Analysis failed to parse.",
@@ -323,8 +323,8 @@ export const analyzeMoatRobustness = async (ticker: string, companyName: string,
 
   return {
     summary: result.summary || "",
-    robustnessScore: result.robustnessScore || 5,
-    scaleEconomicsShared: result.scaleEconomicsShared || "",
+    moatScore: result.moatScore || 5,
+    competitiveAdvantageAnalysis: result.competitiveAdvantageAnalysis || "",
     moatVerdict: result.moatVerdict || "Unknown",
     moatSource: result.moatSource || "Unknown",
     moatDescription: result.moatDescription || "No details provided.",

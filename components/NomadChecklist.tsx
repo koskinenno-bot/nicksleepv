@@ -10,10 +10,10 @@ interface Props {
 const NomadChecklist: React.FC<Props> = ({ company, analysis }) => {
   const checks = [
     {
-      label: "Moat Widening",
-      status: analysis.robustnessScore >= 7 ? "Positive" : analysis.robustnessScore >= 5 ? "Neutral" : "Negative",
-      description: analysis.robustnessScore >= 7 
-        ? "The robustness ratio suggests a widening competitive advantage." 
+      label: "Moat Strength",
+      status: analysis.moatScore >= 7 ? "Positive" : analysis.moatScore >= 5 ? "Neutral" : "Negative",
+      description: analysis.moatScore >= 7 
+        ? "The analysis suggests a strong and durable competitive advantage." 
         : "The moat may be static or under pressure from competitors."
     },
     {
@@ -24,9 +24,9 @@ const NomadChecklist: React.FC<Props> = ({ company, analysis }) => {
         : "Management appears standard or corporate in their approach."
     },
     {
-      label: "Scale Economics Shared",
-      status: analysis.scaleEconomicsShared.toLowerCase().includes("share") ? "Positive" : "Neutral",
-      description: "Evidence of cost savings being passed back to customers to drive volume."
+      label: "Competitive Advantage",
+      status: analysis.moatVerdict.toLowerCase().includes("wide") ? "Positive" : "Neutral",
+      description: `Primary Source: ${analysis.moatSource}. ${analysis.moatDescription.slice(0, 60)}...`
     },
     {
       label: "Capital Allocation",
