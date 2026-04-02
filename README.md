@@ -3,6 +3,7 @@
 **Nomad Terminal** is a professional-grade investment analysis platform inspired by the investment philosophy of the **Nomad Investment Partnership** (Nick Sleep and Qais Zakaria). It combines deep financial engineering with state-of-the-art AI to help investors identify high-quality "compounders" and analyze the robustness of their moats.
 
 ---
+<img width="2550" height="1272" alt="image" src="https://github.com/user-attachments/assets/49d37454-317c-4a6c-b0b7-426aa7b55fbe" />
 
 ## 🚀 Key Features
 
