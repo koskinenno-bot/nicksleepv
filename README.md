@@ -3,6 +3,7 @@
 **Nomad Terminal** is a professional-grade investment analysis platform inspired by the investment philosophy of the **Nomad Investment Partnership** (Nick Sleep and Qais Zakaria). It combines deep financial engineering with state-of-the-art AI to help investors identify high-quality "compounders" and analyze the robustness of their moats.
 
 ---
+<img width="1083" height="1141" alt="image" src="https://github.com/user-attachments/assets/61d177b4-1759-430d-92f6-d8adac4f6fcf" />
 
 ## 🚀 Key Features
 
@@ -12,21 +13,33 @@ Move beyond GAAP net income. This tool calculates "Owner's Earnings" as defined 
 *   **AI-Estimated Maintenance CapEx**: Uses Gemini 3.0 to estimate the portion of CapEx required to maintain current operations vs. growth.
 *   **SBC Adjustment**: Treats Stock-Based Compensation as a real economic expense to reflect true shareholder dilution.
 
+<img width="1206" height="815" alt="image" src="https://github.com/user-attachments/assets/f1d72bac-48db-47ec-bf68-b70a06874b54" />
+
+
 ### 2. AI-Powered Moat Analysis
 Leverages **Google Gemini 3.0** to perform high-level qualitative analysis:
 *   **Scale Economics Shared**: Specifically looks for the "Nomad" holy grail—companies that pass savings back to customers to widen their moat.
 *   **Management Quality**: Analyzes capital allocation history and long-term orientation.
 *   **Moat Robustness Score**: A data-driven qualitative score (1-10) based on competitive positioning.
 
+<img width="1097" height="1098" alt="image" src="https://github.com/user-attachments/assets/fb5a7a83-270f-4d66-b818-6d6339102cae" />
+
+
 ### 3. Valuation & Returns Matrix
 *   **Reverse DCF**: Instead of guessing growth, this tool calculates the "Implied Growth Rate" the market is currently pricing in.
 *   **Returns Matrix (CAGR)**: A 6x6 sensitivity matrix showing potential annualized returns based on varying exit multiples and earnings growth scenarios (up to 50%).
 *   **Price Sensitivity Curve**: Visualizes intrinsic value across a spectrum of growth expectations.
 
+<img width="1007" height="877" alt="image" src="https://github.com/user-attachments/assets/29a796df-5a96-459a-8d5a-5ec92d7d8995" />
+
+
 ### 4. Capital Allocation Dashboard
 Visualizes the tension between **Moat Widening** (Reinvestment in R&D/CapEx) and **Harvesting** (Dividends/Buybacks).
 *   **Yield Analysis**: Real-time calculation of Buyback and Dividend yields relative to historical market caps.
 *   **Reinvestment Rates**: Tracks R&D and CapEx as a percentage of revenue over time.
+
+<img width="1019" height="773" alt="image" src="https://github.com/user-attachments/assets/0f4f982c-bc99-46ef-a047-8c88867d3f28" />
+
 
 ---
 
