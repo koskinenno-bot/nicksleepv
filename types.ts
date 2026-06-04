@@ -9,6 +9,7 @@ export interface WatchlistItem {
 export interface CompanyData {
   ticker: string;
   name: string;
+  dataSourceQuarter?: string; // e.g. "Q1 2026"
   price: number;
   eps: number;
   fcfPerShare: number;

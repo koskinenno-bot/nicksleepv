@@ -4,9 +4,9 @@ import { CompanyData, AnalysisResult } from "../types";
 
 const getClient = (apiKey?: string) => {
   // Prioritize the user-provided key, fallback to environment variable
-  const key = apiKey || process.env.API_KEY;
+  const key = apiKey || process.env.GEMINI_API_KEY;
 
-  if (!key) throw new Error("API Key is missing. Please provide a valid Gemini API Key.");
+  if (!key) throw new Error("API Key is missing. Please ensure GEMINI_API_KEY is set.");
   
   return new GoogleGenAI({ apiKey: key });
 };
@@ -39,11 +39,11 @@ const retryWithBackoff = async <T>(fn: () => Promise<T>, retries = 5, delay = 10
  * falls back to the Flash model.
  */
 const smartGenerate = async (ai: GoogleGenAI, contents: string, tools: any[] = []): Promise<GenerateContentResponse> => {
-  // 1. Try Gemini 3.0 Pro (Most capable, but prone to 503/429 in preview)
+  // 1. Try Gemini 3.1 Pro (Most capable)
   try {
     return await retryWithBackoff(async () => {
       return await ai.models.generateContent({
-        model: "gemini-3-pro-preview",
+        model: "gemini-3.1-pro-preview",
         contents: contents,
         config: { tools },
       });
@@ -54,12 +54,12 @@ const smartGenerate = async (ai: GoogleGenAI, contents: string, tools: any[] = [
     const isAvailabilityIssue = msg.includes('503') || msg.includes('429') || msg.includes('overloaded') || msg.includes('exhausted');
 
     if (isAvailabilityIssue) {
-      console.warn("Gemini 3.0 Pro is overloaded/limited. Falling back to Gemini 2.5 Flash.");
+      console.warn("Gemini 3.1 Pro is overloaded/limited. Falling back to Gemini 3.5 Flash.");
       
-      // 2. Fallback to Gemini 2.5 Flash (Very stable, higher quotas)
+      // 2. Fallback to Gemini 3.5 Flash (Very stable, higher quotas)
       return await retryWithBackoff(async () => {
         return await ai.models.generateContent({
-          model: "gemini-2.5-flash",
+          model: "gemini-3.5-flash",
           contents: contents,
           config: { tools },
         });
@@ -118,11 +118,11 @@ export const fetchCompanyFinancials = async (ticker: string, apiKey?: string): P
   Note: revenueGrowth5Y should be a decimal (e.g., 0.10 for 10%). Net margin should be the percentage value (e.g., 12.5).
   `;
 
-  // SPEED OPTIMIZATION: Use Gemini 2.5 Flash directly for financial data.
+  // SPEED OPTIMIZATION: Use Gemini 3.5 Flash directly for financial data.
   // It is significantly faster, cheaper, and perfectly capable of structured data extraction.
   const response = await retryWithBackoff(async () => {
     return await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-3.5-flash",
       contents: prompt,
       config: { tools: [{ googleSearch: {} }] },
     });

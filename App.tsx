@@ -13,12 +13,10 @@ import NewsFeed from './components/NewsFeed';
 import PresentationCard from './components/PresentationCard';
 import KpiDashboard from './components/KpiDashboard';
 import NomadWisdom from './components/NomadWisdom';
-import ApiKeyInput from './components/ApiKeyInput';
 import WatchlistSidebar from './components/WatchlistSidebar';
 import { WatchlistItem } from './types';
 
 const App: React.FC = () => {
-  const [apiKey, setApiKey] = useState<string>('');
   const [loadingState, setLoadingState] = useState<LoadingState>(LoadingState.IDLE);
   const [company, setCompany] = useState<CompanyData | null>(null);
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
@@ -26,18 +24,10 @@ const App: React.FC = () => {
   const [watchlist, setWatchlist] = useState<WatchlistItem[]>([]);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // Check for key and watchlist on mount
+  // Check for watchlist on mount
   useEffect(() => {
-    const storedKey = localStorage.getItem('gemini_api_key');
-    const envKey = process.env.API_KEY;
     const storedWatchlist = localStorage.getItem('nomad_watchlist_v2');
     
-    if (storedKey) {
-      setApiKey(storedKey);
-    } else if (envKey) {
-      setApiKey(envKey);
-    }
-
     if (storedWatchlist) {
       try {
         setWatchlist(JSON.parse(storedWatchlist));
@@ -46,19 +36,6 @@ const App: React.FC = () => {
       }
     }
   }, []);
-
-  const handleSaveKey = (key: string) => {
-    localStorage.setItem('gemini_api_key', key);
-    setApiKey(key);
-  };
-
-  const clearKey = () => {
-    localStorage.removeItem('gemini_api_key');
-    setApiKey('');
-    setCompany(null);
-    setAnalysis(null);
-    setError(null);
-  };
 
   const addToWatchlist = (comp: CompanyData) => {
     if (!watchlist.find(item => item.ticker === comp.ticker)) {
@@ -81,8 +58,6 @@ const App: React.FC = () => {
   };
 
   const handleSearch = async (ticker: string) => {
-    if (!apiKey) return;
-    
     setIsMobileMenuOpen(false); // Close menu on search
     setLoadingState(LoadingState.SEARCHING);
     setError(null);
@@ -90,8 +65,8 @@ const App: React.FC = () => {
     setAnalysis(null);
 
     // Start both requests in parallel to improve speed
-    const financialPromise = fetchCompanyFinancials(ticker, apiKey);
-    const analysisPromise = analyzeMoatRobustness(ticker, ticker, apiKey);
+    const financialPromise = fetchCompanyFinancials(ticker);
+    const analysisPromise = analyzeMoatRobustness(ticker, ticker);
 
     try {
       const financialData = await financialPromise;
@@ -113,10 +88,6 @@ const App: React.FC = () => {
       setLoadingState(LoadingState.ERROR);
     }
   };
-
-  if (!apiKey) {
-    return <ApiKeyInput onSave={handleSaveKey} />;
-  }
 
   return (
     <div className="flex min-h-screen bg-nomad-950 selection:bg-yellow-500/30 selection:text-yellow-100 relative overflow-x-hidden">
@@ -169,12 +140,6 @@ const App: React.FC = () => {
                  <div className="text-4xl mb-2">⚠️</div>
                  <h3 className="text-xl font-serif text-white">Analysis Failed</h3>
                  <p className="text-lg font-light opacity-90 leading-relaxed">{error}</p>
-                 <button 
-                   onClick={clearKey}
-                   className="mt-4 bg-red-900/50 hover:bg-red-800/50 text-white px-6 py-3 rounded-lg border border-red-700 transition-all text-sm font-bold uppercase tracking-wider hover:scale-105"
-                 >
-                   Change API Key
-                 </button>
               </div>
             </div>
           )}
@@ -298,10 +263,7 @@ const App: React.FC = () => {
         
         <footer className="mt-32 py-12 text-center border-t border-nomad-900 bg-nomad-950">
           <p className="text-nomad-500 text-sm">Inspired by the letters of the Nomad Investment Partnership (Nick Sleep & Qais Zakaria).</p>
-          <p className="mt-2 text-xs text-nomad-600">Data generated via Gemini 3.0 Pro. Use for educational purposes only.</p>
-          <button onClick={clearKey} className="mt-6 text-xs text-nomad-600 hover:text-yellow-500 transition-colors underline">
-            Change API Key
-          </button>
+          <p className="mt-2 text-xs text-nomad-600">Data generated via Gemini 3.1 Pro. Use for educational purposes only.</p>
         </footer>
       </div>
     </div>
